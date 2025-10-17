@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- Ensures proper character encoding -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Makes it mobile-friendly -->
+    <title>Gym Workout Tracker</title>
+    <link rel="stylesheet" href="style.css"> <!-- Links to your CSS with hover effects -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Google Fonts for clean typography -->
+</head>
+<body>
+    <!-- Hero Section: Grabs attention with a bold headline and CTA -->
+    <header class="hero">
+        <h1>Track Your Grind 💪</h1>
+        <p>Log workouts, stay motivated, and build your legacy!</p>
+        <button onclick="document.getElementById('tracker').scrollIntoView()">Start Tracking</button>
+    </header>
+
+    <!-- Tracker Section: Form to input workouts, displays below -->
+    <section id="tracker" class="tracker">
+        <h2>Log Your Workout</h2>
+        <form id="workout-form">
+            <input type="text" id="exercise" placeholder="Exercise (e.g., Squats)" required> <!-- Text input for exercise name -->
+            <input type="number" id="sets" placeholder="Sets" required> <!-- Number input for sets -->
+            <input type="number" id="reps" placeholder="Reps" required> <!-- Number input for reps -->
+            <input type="number" id="weight" placeholder="Weight (kg)" required> <!-- Number input for weight -->
+            <button type="submit">Add Workout</button> <!-- Submits form, triggers JS -->
+        </form>
+        <div id="workout-list"></div> <!-- Container for logged workouts -->
+    </section>
+
+    <!-- Quote Section: Adds motivational vibe -->
+    <section class="quote">
+        <h2>Daily Motivation</h2>
+        <p id="quote">“The only bad workout is the one you didn’t do.”</p>
+    </section>
+
+    <!-- Affiliate Section: Your CPA links go here -->
+    <aside class="affiliate">
+        <h3>Gear Up!</h3>
+        <p>Check out top gym gear: <a href="[Your-CPA-Link]" target="_blank">Shop Now</a></p> <!-- Replace with Jumia/Amazon link -->
+    </aside>
+
+    <!-- Footer: Credits you, boosts personal brand -->
+    <footer>
+        <p>Built by @Theanimedon1 with HTML & CSS | 2025</p>
+    </footer>
+
+    <script src="script.js"></script> <!-- Links to JS for form functionality -->
+</body>
+</html>
