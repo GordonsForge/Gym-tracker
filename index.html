@@ -1,50 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- Ensures proper character encoding -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Makes it mobile-friendly -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Workout Tracker</title>
-    <link rel="stylesheet" href="style.css"> <!-- Links to your CSS with hover effects -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> <!-- Google Fonts for clean typography -->
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0S55E32K0S"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0S55E32K0S"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-0S55E32K0S');
+    </script>
 </head>
 <body>
-    <!-- Hero Section: Grabs attention with a bold headline and CTA -->
+    <!-- Hero section: Eye-catching header with gym image and call-to-action -->
     <header class="hero">
         <h1>Track Your Grind 💪</h1>
         <p>Log workouts, stay motivated, and build your legacy!</p>
+        <!-- Button scrolls to tracker section -->
         <button onclick="document.getElementById('tracker').scrollIntoView()">Start Tracking</button>
     </header>
 
-    <!-- Tracker Section: Form to input workouts, displays below -->
+    <!-- Tracker section: Form to log workouts and display workout list -->
     <section id="tracker" class="tracker">
         <h2>Log Your Workout</h2>
+        <!-- Form for entering workout details -->
         <form id="workout-form">
-            <input type="text" id="exercise" placeholder="Exercise (e.g., Squats)" required> <!-- Text input for exercise name -->
-            <input type="number" id="sets" placeholder="Sets" required> <!-- Number input for sets -->
-            <input type="number" id="reps" placeholder="Reps" required> <!-- Number input for reps -->
-            <input type="number" id="weight" placeholder="Weight (kg)" required> <!-- Number input for weight -->
-            <button type="submit">Add Workout</button> <!-- Submits form, triggers JS -->
+            <label for="exercise">Exercise:</label>
+            <input type="text" id="exercise" required> <!-- Required exercise name -->
+            <label for="sets">Sets (optional):</label>
+            <input type="number" id="sets"> <!-- Optional sets -->
+            <label for="reps">Reps (optional):</label>
+            <input type="number" id="reps"> <!-- Optional reps -->
+            <label for="weight">Weight (kg, optional):</label>
+            <input type="number" id="weight"> <!-- Optional weight -->
+            <label for="distance">Distance (km, optional):</label>
+            <!-- Optional distance, allows decimals (e.g., 5.5km) -->
+            <input type="number" id="distance" step="0.1">
+            <!-- Submit button to add/edit workout -->
+            <button type="submit">Add Workout</button>
         </form>
-        <div id="workout-list"></div> <!-- Container for logged workouts -->
+        <!-- Button to clear workout list (preserves progress) -->
+        <button id="clear-workouts">Clear Workouts</button>
+        <!-- Container for workout list with checkboxes and edit/delete buttons -->
+        <div id="workout-list"></div>
     </section>
 
-    <!-- Quote Section: Adds motivational vibe -->
+    <!-- Progress section: Displays completed workout counts -->
+    <section id="progress" class="progress">
+        <h2>Your Progress</h2>
+        <p id="progress-text">Today: 0 | Week: 0 | Month: 0</p>
+    </section>
+
+    <!-- Quote section: Random MHA-inspired motivational quote -->
     <section class="quote">
         <h2>Daily Motivation</h2>
-        <p id="quote">“The only bad workout is the one you didn’t do.”</p>
+        <p id="quote">The only bad workout is the one you didn’t do.</p>
     </section>
 
-    <!-- Affiliate Section: Your CPA links go here -->
+    <!-- Affiliate section: Placeholder for future CPA link -->
     <aside class="affiliate">
         <h3>Gear Up! (Coming Soon)</h3>
-        <p>Check out top gym gear: <a href="[Your-CPA-Link]" target="_blank">Shop Now</a></p> <!-- Replace with Jumia/Amazon link -->
+        <p>Check out top gym gear: <a href="[Your-CPA-Link]" target="_blank">Shop Now</a></p>
     </aside>
 
-    <!-- Footer: Credits you, boosts personal brand -->
+    <!-- Footer: Credits and branding -->
     <footer>
         <p>Built by @Theanimedon1 with HTML & CSS | 2025</p>
     </footer>
 
-    <script src="script.js"></script> <!-- Links to JS for form functionality -->
+    <!-- Link to JavaScript for functionality -->
+    <script src="script.js"></script>
 </body>
 </html>
+

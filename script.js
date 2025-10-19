@@ -1,8 +1,10 @@
-// Select the form and workout list container from the HTML
-const form = document.getElementById('workout-form');
-const workoutList = document.getElementById('workout-list');
+// Get DOM elements for interaction
+const form = document.getElementById('workout-form'); // Form for logging workouts
+const workoutList = document.getElementById('workout-list'); // Container for workout items
+const clearButton = document.getElementById('clear-workouts'); // Button to clear workout list
+const progressText = document.getElementById('progress-text'); // Progress display text
 
-// Array of motivational quotes for the quote section
+// Array of MHA-inspired motivational quotes
 const quotes = [
     "The only bad workout is the one you didn’t do.",
     "Push harder than yesterday if you want a different tomorrow.",
@@ -26,30 +28,256 @@ const quotes = [
     "Even steel trembles before it’s hardened.",
     "Don’t pray for lighter burdens. Pray for a stronger back.",
     "You can’t fake the fire in your eyes. The Forge knows.",
-    "Every morning you rise is another chance to rewrite who you are."
+    "Every morning you rise is another chance to rewrite who you are.",
+    "Go beyond, Plus Ultra! 🌟"
 ];
 
-// Add submit event listener to the form
-form.addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent default form submission (page reload)
+// Load workouts and completed workout timestamps from localStorage
+let workouts = JSON.parse(localStorage.getItem('workouts') || '[]'); // Current workout list
+let completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts') || '[]'); // Cleared completed timestamps
+let lastResetDay = localStorage.getItem('lastResetDay') || null; // Last day reset
+let lastResetWeek = localStorage.getItem('lastResetWeek') || null; // Last week reset
+let editingIndex = -1; // Track index of workout being edited
 
-    // Get values from form inputs
+// Clean completedWorkouts and reset counters if needed
+const now = new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+// Clean invalid or future timestamps and reset for new day/week/month
+completedWorkouts = completedWorkouts.filter(t => {
+    try {
+        const date = new Date(t);
+        return date <= now && date >= monthStart; // Keep only current month’s valid timestamps
+    } catch (e) {
+        return false; // Remove invalid timestamps
+    }
+});
+
+// Reset Today if new day
+if (!lastResetDay || new Date(lastResetDay) < today) {
+    completedWorkouts = completedWorkouts.filter(t => new Date(t) < today); // Remove today’s timestamps
+    lastResetDay = now.toISOString();
+}
+
+// Reset Week if new week (Sunday start)
+if (!lastResetWeek || new Date(lastResetWeek) < weekStart) {
+    completedWorkouts = completedWorkouts.filter(t => new Date(t) < weekStart); // Remove week’s timestamps
+    lastResetWeek = now.toISOString();
+}
+
+// Save cleaned data
+localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
+localStorage.setItem('lastResetDay', lastResetDay);
+localStorage.setItem('lastResetWeek', lastResetWeek);
+
+// Save workouts and metadata to localStorage
+function saveWorkouts() {
+    localStorage.setItem('workouts', JSON.stringify(workouts));
+    localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
+    localStorage.setItem('lastResetDay', lastResetDay);
+    localStorage.setItem('lastResetWeek', lastResetWeek);
+}
+
+// Update progress counts for completed workouts only
+function updateProgress() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Count completed workouts in current list and cleared completed workouts
+    const todayCount = workouts.filter(w => w.completed && new Date(w.timestamp) >= today).length +
+                      completedWorkouts.filter(t => new Date(t) >= today).length;
+    const weekCount = workouts.filter(w => w.completed && new Date(w.timestamp) >= weekStart).length +
+                      completedWorkouts.filter(t => new Date(t) >= weekStart).length;
+    const monthCount = workouts.filter(w => w.completed && new Date(w.timestamp) >= monthStart).length +
+                       completedWorkouts.filter(t => new Date(t) >= monthStart).length;
+
+    // Update progress display
+    progressText.textContent = `Today: ${todayCount} | Week: ${weekCount} | Month: ${monthCount}`;
+
+    // Track progress view in GA4
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'progress_viewed', {
+            'event_category': 'Gym Tracker',
+            'event_label': 'Progress Update',
+            'value': todayCount
+        });
+    }
+}
+
+// Render workouts to the DOM
+function renderWorkouts() {
+    workoutList.innerHTML = ''; // Clear current list
+    workouts.forEach((workout, index) => {
+        const workoutItem = document.createElement('div');
+        workoutItem.classList.add('workout-item');
+        if (workout.completed) workoutItem.classList.add('completed');
+
+        // Checkbox for marking workout complete
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = workout.completed;
+        checkbox.addEventListener('change', () => {
+            workouts[index].completed = checkbox.checked;
+            workoutItem.classList.toggle('completed', checkbox.checked);
+            saveWorkouts();
+            updateProgress();
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'workout_completed', {
+                    'event_category': 'Gym Tracker',
+                    'event_label': workout.text,
+                    'value': checkbox.checked ? 1 : 0
+                });
+            }
+        });
+
+        // Display workout text
+        const textSpan = document.createElement('span');
+        textSpan.textContent = workout.text;
+
+        // Edit button to pre-fill form
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit';
+        editButton.classList.add('edit-button');
+        editButton.addEventListener('click', () => {
+            const parts = workout.text.split(': ');
+            const exercise = parts[0];
+            const details = parts[1] ? parts[1].split(', ') : [];
+            let sets = '', reps = '', weight = '', distance = '';
+            details.forEach(detail => {
+                if (detail.includes('set')) sets = detail.split(' ')[0];
+                if (detail.includes('rep')) reps = detail.split(' ')[0];
+                if (detail.includes('kg')) weight = detail.split(' ')[0];
+                if (detail.includes('km')) distance = detail.split(' ')[0];
+            });
+
+            document.getElementById('exercise').value = exercise;
+            document.getElementById('sets').value = sets;
+            document.getElementById('reps').value = reps;
+            document.getElementById('weight').value = weight;
+            document.getElementById('distance').value = distance;
+            editingIndex = index;
+
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'workout_edit_started', {
+                    'event_category': 'Gym Tracker',
+                    'event_label': workout.text
+                });
+            }
+        });
+
+        // Delete button to remove workout
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('delete-button');
+        deleteButton.addEventListener('click', () => {
+            if (workouts[index].completed) {
+                completedWorkouts = completedWorkouts.filter(t => t !== workouts[index].timestamp);
+            }
+            workouts.splice(index, 1);
+            saveWorkouts();
+            renderWorkouts();
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'workout_deleted', {
+                    'event_category': 'Gym Tracker',
+                    'event_label': workout.text
+                });
+            }
+        });
+
+        workoutItem.appendChild(checkbox);
+        workoutItem.appendChild(textSpan);
+        workoutItem.appendChild(editButton);
+        workoutItem.appendChild(deleteButton);
+        workoutList.appendChild(workoutItem);
+    });
+    updateProgress();
+}
+
+// Handle form submission
+form.addEventListener('submit', (e) => {
+    e.preventDefault();
     const exercise = document.getElementById('exercise').value;
     const sets = document.getElementById('sets').value;
     const reps = document.getElementById('reps').value;
     const weight = document.getElementById('weight').value;
+    const distance = document.getElementById('distance').value;
 
-    // Create a new div for the workout entry
-    const workoutItem = document.createElement('div');
-    workoutItem.classList.add('workout-item'); // Add CSS class for styling
-    workoutItem.textContent = `${exercise}: ${sets} sets, ${reps} reps, ${weight}kg`; // Format the entry
+    let workoutText = exercise;
+    const details = [];
+    if (sets) details.push(`${sets} set${sets == 1 ? '' : 's'}`);
+    if (reps) details.push(`${reps} rep${reps == 1 ? '' : 's'}`);
+    if (weight) details.push(`${weight}kg`);
+    if (distance) details.push(`${distance}km`);
+    if (details.length > 0) workoutText += `: ${details.join(', ')}`;
 
-    // Append the entry to the workout list
-    workoutList.appendChild(workoutItem);
+    if (editingIndex >= 0) {
+        const wasCompleted = workouts[editingIndex].completed;
+        if (wasCompleted) {
+            completedWorkouts = completedWorkouts.filter(t => t !== workouts[editingIndex].timestamp);
+        }
+        workouts[editingIndex] = {
+            text: workoutText,
+            completed: wasCompleted,
+            timestamp: workouts[editingIndex].timestamp
+        };
+        if (wasCompleted) {
+            completedWorkouts.push(workouts[editingIndex].timestamp);
+        }
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'workout_edited', {
+                'event_category': 'Gym Tracker',
+                'event_label': workoutText
+            });
+        }
+        editingIndex = -1;
+    } else {
+        workouts.push({
+            text: workoutText,
+            completed: false,
+            timestamp: new Date().toISOString()
+        });
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'workout_logged', {
+                'event_category': 'Gym Tracker',
+                'event_label': exercise,
+                'value': 1,
+                'distance': distance || 'none'
+            });
+        }
+    }
 
-    // Reset the form after submission
+    saveWorkouts();
+    renderWorkouts();
+
+    document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
     form.reset();
 });
 
-// Set a random quote on page load
+// Handle Clear Workouts button
+clearButton.addEventListener('click', () => {
+    // Move completed workouts' timestamps to completedWorkouts
+    workouts.forEach(workout => {
+        if (workout.completed) {
+            completedWorkouts.push(workout.timestamp);
+        }
+    });
+    workouts = []; // Clear current workout list
+    saveWorkouts(); // Save both arrays
+    renderWorkouts(); // Re-render list (progress persists)
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'workouts_cleared', {
+            'event_category': 'Gym Tracker',
+            'event_label': 'Clear Button'
+        });
+    }
+});
+
+// Set random quote on page load
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+// Initial render
+renderWorkouts();

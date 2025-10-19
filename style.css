@@ -1,115 +1,196 @@
-/* Reset default browser styles for consistency */
+/* Reset default browser styles for consistency across browsers */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Roboto', sans-serif; /* Clean, modern font from Google Fonts */
+    box-sizing: border-box; /* Ensures padding and borders are included in element sizes */
+    font-family: 'Roboto', sans-serif; /* Use Roboto font from Google Fonts */
 }
 
-/* Body: Light gray background for contrast */
+/* Body: Light gray background for a clean look */
 body {
     background: #f4f4f4;
-    color: #333;
+    color: #333; /* Dark text for readability */
 }
 
-/* Hero Section: Full-width gym image with centered text */
+/* Hero Section: Header with gym background image */
 .hero {
-    background: url('gym.jpg') no-repeat center/cover; /* Free gym image */
+    background: url('gym.jpg') no-repeat center/cover; /* Gym image, centered and scaled */
     height: 50vh; /* Half viewport height */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for readability */
+    color: white; /* White text for contrast */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for readability on image */
 }
 
 /* Hero headline */
 .hero h1 {
-    font-size: 3rem;
+    font-size: 3rem; /* Large, bold title */
 }
 
 /* Hero paragraph */
 .hero p {
     font-size: 1.2rem;
-    margin: 10px 0;
+    margin: 10px 0; /* Spacing above and below */
 }
 
-/* Hero button with hover effect */
+/* Hero button: Coral-themed call-to-action */
 .hero button {
     padding: 10px 20px;
     font-size: 1rem;
-    background: #ff6f61; /* Vibrant coral for gym energy */
+    background: #ff6f61; /* Coral color */
     border: none;
     color: white;
     cursor: pointer;
     border-radius: 5px;
-    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out; /* Smooth hover transitions */
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out; /* Smooth hover effects */
 }
 
-/* Hero button hover: Scales up and changes color */
+/* Hero button hover: Darker coral and slight scale */
 .hero button:hover {
-    background: #e55a50; /* Darker coral */
+    background: #e55a50;
     transform: scale(1.05);
 }
 
-/* Tracker, Quote, and Affiliate sections: Centered, card-like containers */
-.tracker, .quote, .affiliate {
-    padding: 40px;
-    max-width: 800px; /* Limits width for readability */
-    margin: 20px auto;
-    background: white;
+/* Tracker, Progress, Quote, Affiliate: Card-like containers */
+.tracker, .progress, .quote, .affiliate {
+    padding: 40px; /* Spacious padding */
+    max-width: 800px; /* Constrain width for readability */
+    margin: 20px auto; /* Center with spacing */
+    background: white; /* White background for card effect */
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 /* Section headings */
-.tracker h2, .quote h2, .affiliate h3 {
-    margin-bottom: 20px;
+.tracker h2, .progress h2, .quote h2, .affiliate h3 {
+    margin-bottom: 20px; /* Space below headings */
 }
 
-/* Form: Grid layout for inputs */
-form {
+/* Tracker form: Grid layout for inputs */
+.tracker form {
     display: grid;
-    gap: 10px; /* Space between inputs */
+    gap: 10px; /* Spacing between form elements */
 }
 
-/* Inputs and buttons: Consistent styling */
-input, button {
+/* Form inputs (exercise, sets, reps, weight, distance) */
+.tracker input {
     padding: 10px;
     font-size: 1rem;
-    border: 1px solid #ddd;
+    border: 1px solid #ddd; /* Light gray border */
     border-radius: 5px;
-    transition: transform 0.2s ease-in-out; /* Smooth hover for all buttons */
 }
 
-/* Form button */
-button {
-    background: #ff6f61;
+/* Form submit button: Coral-themed */
+.tracker button[type="submit"] {
+    background: #ff6f61; /* Coral */
     color: white;
     border: none;
     cursor: pointer;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Form button hover: Scales up and changes color */
-button:hover {
+/* Submit button hover: Darker coral and scale */
+.tracker button[type="submit"]:hover {
+    background: #e55a50;
+    transform: scale(1.05);
+}
+
+/* Clear Workouts button: Coral-themed, below form */
+#clear-workouts {
+    background: #ff6f61;
+    color: white;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px; /* Space above button */
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+/* Clear Workouts button hover */
+#clear-workouts:hover {
     background: #e55a50;
     transform: scale(1.05);
 }
 
 /* Workout list container */
 #workout-list {
-    margin-top: 20px;
+    margin-top: 20px; /* Space above workout list */
 }
 
-/* Individual workout items */
+/* Workout items: Flexbox for checkbox, text, and buttons */
 .workout-item {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between elements */
     padding: 10px;
-    border-bottom: 1px solid #ddd; /* Separates entries */
+    border-bottom: 1px solid #ddd; /* Separator line */
+    background: #f9f9f9; /* Light gray background */
+    border-radius: 5px;
 }
 
-/* Affiliate link styling */
+/* Completed workouts: Deku-green background and strikethrough */
+.workout-item.completed {
+    background: #d0ffd0; /* MHA-inspired Deku green */
+    text-decoration: line-through;
+}
+
+/* Checkbox styling */
+.workout-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+/* Edit and Delete buttons */
+.edit-button, .delete-button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px; /* Space from text */
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+/* Edit button: Green */
+.edit-button {
+    background: #4caf50;
+    color: white;
+}
+
+/* Edit button hover */
+.edit-button:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+/* Delete button: Red */
+.delete-button {
+    background: #ff4c4c;
+    color: white;
+}
+
+/* Delete button hover */
+.delete-button:hover {
+    background: #cc3d3d;
+    transform: scale(1.05);
+}
+
+/* Progress section text: Bold for visibility */
+.progress p {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Affiliate link: Coral color */
 .affiliate a {
     color: #ff6f61;
     text-decoration: none;
@@ -117,10 +198,10 @@ button:hover {
 
 /* Affiliate link hover */
 .affiliate a:hover {
-    text-decoration: underline; /* Subtle feedback */
+    text-decoration: underline;
 }
 
-/* Footer: Dark background, centered text */
+/* Footer: Dark background with white text */
 footer {
     text-align: center;
     padding: 20px;
@@ -128,13 +209,16 @@ footer {
     color: white;
 }
 
-/* Responsive Design: Adjusts for mobile */
+/* Responsive: Adjustments for mobile screens */
 @media (max-width: 600px) {
     .hero h1 {
         font-size: 2rem; /* Smaller headline */
     }
-
-    .tracker, .quote, .affiliate {
-        padding: 20px; /* Less padding on small screens */
+    .tracker, .progress, .quote, .affiliate {
+        padding: 20px; /* Reduced padding */
+    }
+    .edit-button, .delete-button {
+        padding: 5px 8px; /* Smaller buttons */
+        font-size: 0.8rem;
     }
 }
