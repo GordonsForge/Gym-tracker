@@ -1,0 +1,20 @@
+name: Post Commit to X
+on:
+  push:
+    branches: [ai-workout]
+jobs:
+  tweet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post to X
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: |
+          curl -X POST "https://api.x.com/2/tweets" \
+          -H "Authorization: OAuth oauth_consumer_key=$X_API_KEY,oauth_token=$X_ACCESS_TOKEN,oauth_signature_method=HMAC-SHA1,oauth_timestamp=$(date +%s),oauth_nonce=$(openssl rand -hex 16),oauth_version=1.0,oauth_signature=$(echo -n 'POST&https%3A%2F%2Fapi.x.com%2F2%2Ftweets&status=Forge%20Flow%20commit%3A%20${{ github.event.head_commit.message }}%20%23BuildInPublic%20%5BRepo%3A%20https%3A%2F%2Fgithub.com%2FGordonsForge%2FGym-tracker%5D' | openssl sha1 -hmac $X_API_SECRET | base64)" \
+          -H "Content-Type: application/json" \
+          -d "{\"text\": \"Forge Flow commit: ${{ github.event.head_commit.message }} #BuildInPublic [Repo: https://github.com/GordonsForge/Gym-tracker]\"}"
