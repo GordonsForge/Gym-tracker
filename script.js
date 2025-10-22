@@ -3,6 +3,9 @@ const form = document.getElementById('workout-form'); // Form for logging workou
 const workoutList = document.getElementById('workout-list'); // Container for workout items
 const clearButton = document.getElementById('clear-workouts'); // Button to clear workout list
 const progressText = document.getElementById('progress-text'); // Progress display text
+const goalForm = document.getElementById('goal-form'); // Goal form for fitness goal and level (Day 2)
+const suggestButton = document.getElementById('suggest-workout'); // Suggest Workout button (Day 2)
+const suggestionOutput = document.getElementById('suggestion-output'); // Output for AI suggestions (Day 2)
 
 // Array of MHA-inspired motivational quotes
 const quotes = [
@@ -197,7 +200,51 @@ function renderWorkouts() {
     updateProgress();
 }
 
-// Handle form submission
+// Handle goal form submission (Day 2)
+goalForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const goal = document.getElementById('goal').value;
+    const level = document.getElementById('fitness-level').value;
+    // Save goal and fitness level to localStorage for AI suggestions
+    localStorage.setItem('userGoal', JSON.stringify({ goal, level }));
+    alert('Goal saved! Plus Ultra!');
+    // Track goal submission in GA4
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'goal_saved', {
+            'event_category': 'Gym Tracker',
+            'event_label': `${goal} (${level})`
+        });
+    }
+});
+
+// Handle Suggest Workout button (Day 2)
+suggestButton.addEventListener('click', () => {
+    const { goal, level } = JSON.parse(localStorage.getItem('userGoal') || '{}');
+    let suggestion = 'No goal set. Smash through!';
+    // Mock AI logic: Suggest workouts based on goal and fitness level
+    if (goal && level) {
+        if (level === 'beginner' && goal.toLowerCase().includes('muscle')) {
+            suggestion = '3x10 push-ups, 3x10 squats - Start strong!';
+        } else if (level === 'intermediate' && goal.toLowerCase().includes('muscle')) {
+            suggestion = '4x8 bench press, 3x12 bicep curls - Power up!';
+        } else if (level === 'advanced' && goal.toLowerCase().includes('muscle')) {
+            suggestion = '5x5 deadlifts, 4x10 pull-ups - Go Plus Ultra!';
+        } else {
+            suggestion = 'Log workouts for tailored suggestions!';
+        }
+    }
+    // Display suggestion in output div
+    suggestionOutput.textContent = suggestion;
+    // Track suggestion request in GA4
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'workout_suggested', {
+            'event_category': 'Gym Tracker',
+            'event_label': suggestion
+        });
+    }
+});
+
+// Handle workout form submission
 form.addEventListener('submit', (e) => {
     e.preventDefault();
     const exercise = document.getElementById('exercise').value;

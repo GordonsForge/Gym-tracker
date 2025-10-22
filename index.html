@@ -6,15 +6,12 @@
     <title>Gym Workout Tracker</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0S55E32K0S"></script>
-    <!-- Google tag (gtag.js) -->
+    <!-- Google tag (gtag.js) for analytics tracking -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0S55E32K0S"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'G-0S55E32K0S');
     </script>
 </head>
@@ -27,23 +24,38 @@
         <button onclick="document.getElementById('tracker').scrollIntoView()">Start Tracking</button>
     </header>
 
-    <!-- Tracker section: Form to log workouts and display workout list -->
+    <!-- Tracker section: Goal form, workout form, and workout list -->
     <section id="tracker" class="tracker">
         <h2>Log Your Workout</h2>
-        <!-- Form for entering workout details -->
+        <!-- Goal form: Set fitness goal and level for AI suggestions (Day 2) -->
+        <form id="goal-form">
+            <label for="goal">Fitness Goal:</label>
+            <input type="text" id="goal" placeholder="e.g., build muscle" required>
+            <label for="fitness-level">Fitness Level:</label>
+            <select id="fitness-level" required>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+            <button type="submit">Save Goal</button>
+        </form>
+        <!-- Suggest Workout button: Triggers AI workout suggestion (Day 2) -->
+        <button id="suggest-workout">Suggest Workout</button>
+        <!-- Output for AI workout suggestions (Day 2) -->
+        <div id="suggestion-output"></div>
+
+        <!-- Workout form: Log exercise details -->
         <form id="workout-form">
             <label for="exercise">Exercise:</label>
-            <input type="text" id="exercise" required> <!-- Required exercise name -->
+            <input type="text" id="exercise" required>
             <label for="sets">Sets (optional):</label>
-            <input type="number" id="sets"> <!-- Optional sets -->
+            <input type="number" id="sets">
             <label for="reps">Reps (optional):</label>
-            <input type="number" id="reps"> <!-- Optional reps -->
+            <input type="number" id="reps">
             <label for="weight">Weight (kg, optional):</label>
-            <input type="number" id="weight"> <!-- Optional weight -->
+            <input type="number" id="weight">
             <label for="distance">Distance (km, optional):</label>
-            <!-- Optional distance, allows decimals (e.g., 5.5km) -->
             <input type="number" id="distance" step="0.1">
-            <!-- Submit button to add/edit workout -->
             <button type="submit">Add Workout</button>
         </form>
         <!-- Button to clear workout list (preserves progress) -->
