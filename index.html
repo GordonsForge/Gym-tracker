@@ -27,16 +27,32 @@
     <!-- Tracker section: Goal form, workout form, and workout list -->
     <section id="tracker" class="tracker">
         <h2>Log Your Workout</h2>
-        <!-- Goal form: Set fitness goal and level for AI suggestions (Day 2) -->
+        <!-- Goal form: Set fitness goal, level, and body parts for AI suggestions (Day 3) -->
         <form id="goal-form">
             <label for="goal">Fitness Goal:</label>
-            <input type="text" id="goal" placeholder="e.g., build muscle" required>
+            <select id="goal" required>
+                <option value="" disabled selected>Select a goal</option>
+                <option value="Build Muscle">Build Muscle</option>
+                <option value="Build Endurance">Build Endurance</option>
+                <option value="Build Strength">Build Strength</option>
+            </select>
             <label for="fitness-level">Fitness Level:</label>
             <select id="fitness-level" required>
+                <option value="" disabled selected>Select a level</option>
                 <option value="beginner">Beginner</option>
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
             </select>
+            <fieldset>
+                <legend>Focus Areas (optional):</legend>
+                <label><input type="checkbox" name="body-part" value="abs"> Abs</label>
+                <label><input type="checkbox" name="body-part" value="chest"> Chest</label>
+                <label><input type="checkbox" name="body-part" value="back"> Back</label>
+                <label><input type="checkbox" name="body-part" value="legs"> Legs</label>
+                <label><input type="checkbox" name="body-part" value="arms"> Arms</label>
+                <label><input type="checkbox" name="body-part" value="shoulders"> Shoulders</label>
+                <label><input type="checkbox" name="body-part" value="glutes"> Glutes</label>
+            </fieldset>
             <button type="submit">Save Goal</button>
         </form>
         <!-- Suggest Workout button: Triggers AI workout suggestion (Day 2) -->
@@ -91,4 +107,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-

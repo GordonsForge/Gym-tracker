@@ -69,22 +69,44 @@ body {
     margin-bottom: 20px; /* Space below headings */
 }
 
-/* Goal form: Grid layout for inputs (Day 2) */
+/* Goal form: Grid layout for inputs and checkboxes (Day 3) */
 #goal-form {
     display: grid;
     gap: 10px; /* Spacing between form elements */
     margin-bottom: 20px; /* Space below form */
 }
 
-/* Goal form inputs and dropdown (Day 2) */
-#goal-form input, #goal-form select {
+/* Goal form dropdowns (goal, fitness level) */
+#goal-form select {
     padding: 10px;
     font-size: 1rem;
     border: 1px solid #ddd; /* Light gray border */
     border-radius: 5px;
 }
 
-/* Goal form submit button: Coral-themed (Day 2) */
+/* Body part checkboxes: Grid layout for clarity (Day 3) */
+#goal-form fieldset {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Responsive grid */
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Checkbox labels */
+#goal-form fieldset label {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+/* Checkbox styling */
+#goal-form fieldset input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+/* Goal form submit button: Coral-themed */
 #goal-form button[type="submit"] {
     background: #ff6f61; /* Coral */
     color: white;
@@ -96,7 +118,7 @@ body {
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Goal form submit button hover (Day 2) */
+/* Goal form submit button hover */
 #goal-form button[type="submit"]:hover {
     background: #e55a50;
     transform: scale(1.05);
@@ -115,7 +137,7 @@ body {
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Suggest Workout button hover (Day 2) */
+/* Suggest Workout button hover */
 #suggest-workout:hover {
     background: #e55a50;
     transform: scale(1.05);
@@ -280,5 +302,9 @@ footer {
     .edit-button, .delete-button {
         padding: 5px 8px; /* Smaller buttons */
         font-size: 0.8rem;
+    }
+    /* Responsive checkboxes */
+    #goal-form fieldset {
+        grid-template-columns: 1fr; /* Stack on small screens */
     }
 }

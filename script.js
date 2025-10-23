@@ -3,7 +3,7 @@ const form = document.getElementById('workout-form'); // Form for logging workou
 const workoutList = document.getElementById('workout-list'); // Container for workout items
 const clearButton = document.getElementById('clear-workouts'); // Button to clear workout list
 const progressText = document.getElementById('progress-text'); // Progress display text
-const goalForm = document.getElementById('goal-form'); // Goal form for fitness goal and level (Day 2)
+const goalForm = document.getElementById('goal-form'); // Goal form for fitness goal, level, body parts (Day 3)
 const suggestButton = document.getElementById('suggest-workout'); // Suggest Workout button (Day 2)
 const suggestionOutput = document.getElementById('suggestion-output'); // Output for AI suggestions (Day 2)
 
@@ -200,37 +200,127 @@ function renderWorkouts() {
     updateProgress();
 }
 
-// Handle goal form submission (Day 2)
+// Handle goal form submission (Day 3)
 goalForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const goal = document.getElementById('goal').value;
     const level = document.getElementById('fitness-level').value;
-    // Save goal and fitness level to localStorage for AI suggestions
-    localStorage.setItem('userGoal', JSON.stringify({ goal, level }));
+    const bodyParts = Array.from(document.querySelectorAll('input[name="body-part"]:checked')).map(input => input.value);
+    // Save goal, fitness level, and body parts to localStorage for AI suggestions
+    localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyParts }));
     alert('Goal saved! Plus Ultra!');
     // Track goal submission in GA4
     if (typeof gtag !== 'undefined') {
         gtag('event', 'goal_saved', {
             'event_category': 'Gym Tracker',
-            'event_label': `${goal} (${level})`
+            'event_label': `${goal} (${level}, ${bodyParts.join(', ') || 'none'})`
         });
     }
 });
 
-// Handle Suggest Workout button (Day 2)
+// Handle Suggest Workout button (Day 3)
 suggestButton.addEventListener('click', () => {
-    const { goal, level } = JSON.parse(localStorage.getItem('userGoal') || '{}');
+    const { goal, level, bodyParts } = JSON.parse(localStorage.getItem('userGoal') || '{}');
     let suggestion = 'No goal set. Smash through!';
-    // Mock AI logic: Suggest workouts based on goal and fitness level
+    // Enhanced mock AI logic: Suggest 3 varied workouts based on goal, level, and body parts (Day 3)
     if (goal && level) {
-        if (level === 'beginner' && goal.toLowerCase().includes('muscle')) {
-            suggestion = '3x10 push-ups, 3x10 squats - Start strong!';
-        } else if (level === 'intermediate' && goal.toLowerCase().includes('muscle')) {
-            suggestion = '4x8 bench press, 3x12 bicep curls - Power up!';
-        } else if (level === 'advanced' && goal.toLowerCase().includes('muscle')) {
-            suggestion = '5x5 deadlifts, 4x10 pull-ups - Go Plus Ultra!';
+        const workouts = {
+            'Build Muscle': {
+                beginner: {
+                    abs: ['3x10 crunches', '3x12 leg raises', '2x30s plank'],
+                    chest: ['3x10 push-ups', '3x12 incline push-ups', '2x15 chest dips'],
+                    back: ['3x8 bent-over rows (light)', '3x10 reverse flys', '2x12 supermans'],
+                    legs: ['3x10 bodyweight squats', '3x12 lunges', '2x15 calf raises'],
+                    arms: ['3x10 bicep curls (light)', '3x12 tricep dips', '2x15 hammer curls'],
+                    shoulders: ['3x10 shoulder press (light)', '3x12 lateral raises', '2x15 front raises'],
+                    glutes: ['3x10 glute bridges', '3x12 donkey kicks', '2x15 fire hydrants']
+                },
+                intermediate: {
+                    abs: ['4x12 hanging leg raises', '3x15 bicycle crunches', '3x45s plank'],
+                    chest: ['4x8 bench press (moderate)', '3x12 dumbbell flys', '3x10 push-ups'],
+                    back: ['4x8 pull-ups', '3x10 bent-over rows', '3x12 deadlifts (moderate)'],
+                    legs: ['4x8 squats (moderate)', '3x12 lunges', '3x10 step-ups'],
+                    arms: ['4x8 bicep curls', '3x12 tricep pushdowns', '3x10 skull crushers'],
+                    shoulders: ['4x8 overhead press', '3x12 lateral raises', '3x10 rear delt flys'],
+                    glutes: ['4x8 hip thrusts', '3x12 glute kickbacks', '3x15 sumo squats']
+                },
+                advanced: {
+                    abs: ['5x15 weighted crunches', '4x20 cable woodchoppers', '3x60s plank'],
+                    chest: ['5x5 bench press (heavy)', '4x10 incline dumbbell press', '3x12 cable flys'],
+                    back: ['5x5 deadlifts (heavy)', '4x8 weighted pull-ups', '3x12 barbell rows'],
+                    legs: ['5x5 barbell squats (heavy)', '4x10 lunges (weighted)', '3x12 leg press'],
+                    arms: ['5x5 barbell curls', '4x10 weighted dips', '3x12 concentration curls'],
+                    shoulders: ['5x5 military press', '4x10 Arnold press', '3x12 upright rows'],
+                    glutes: ['5x5 hip thrusts (heavy)', '4x10 single-leg glute bridges', '3x12 barbell sumo squats']
+                }
+            },
+            'Build Endurance': {
+                beginner: {
+                    abs: ['3x15 bicycle crunches', '3x20 mountain climbers', '2x30s hollow hold'],
+                    chest: ['3x15 push-ups', '3x20 chest dips', '2x30s isometric chest press'],
+                    back: ['3x15 supermans', '3x20 bodyweight rows', '2x30s plank rows'],
+                    legs: ['2km jog', '3x15 bodyweight squats', '3x20 walking lunges'],
+                    arms: ['3x15 arm circles', '3x20 tricep dips', '2x30s shadow boxing'],
+                    shoulders: ['3x15 shoulder taps', '3x20 front raises (light)', '2x30s lateral hold'],
+                    glutes: ['3x15 glute bridges', '3x20 donkey kicks', '2x30s squat hold']
+                },
+                intermediate: {
+                    abs: ['4x20 mountain climbers', '3x30 Russian twists', '3x45s plank'],
+                    chest: ['4x12 push-ups', '3x15 incline push-ups', '3x20 burpees'],
+                    back: ['4x12 bodyweight rows', '3x15 supermans', '3x20 plank rows'],
+                    legs: ['5km run', '3x20 lunges', '3x15 jump squats'],
+                    arms: ['4x12 bicep curls (light)', '3x15 tricep pushdowns', '3x20 shadow boxing'],
+                    shoulders: ['4x12 lateral raises', '3x15 shoulder press (light)', '3x20 Y-raises'],
+                    glutes: ['4x12 glute kickbacks', '3x15 sumo squats', '3x20 fire hydrants']
+                },
+                advanced: {
+                    abs: ['5x25 mountain climbers', '4x30 weighted Russian twists', '3x60s plank with leg lift'],
+                    chest: ['5x15 clapping push-ups', '4x20 incline dumbbell press', '3x25 burpees'],
+                    back: ['5x10 pull-ups', '4x15 deadlifts (moderate)', '3x20 bent-over rows'],
+                    legs: ['10km run', '4x20 jump lunges', '3x15 pistol squats'],
+                    arms: ['5x15 weighted dips', '4x20 hammer curls', '3x25 shadow boxing'],
+                    shoulders: ['5x10 overhead press', '4x15 rear delt flys', '3x20 lateral raises'],
+                    glutes: ['5x10 hip thrusts (moderate)', '4x15 single-leg glute bridges', '3x20 sumo squats']
+                }
+            },
+            'Build Strength': {
+                beginner: {
+                    abs: ['3x10 crunches', '3x12 leg raises', '2x30s plank'],
+                    chest: ['3x10 push-ups', '3x12 incline push-ups', '2x15 chest dips'],
+                    back: ['3x8 bodyweight rows', '3x10 supermans', '2x12 reverse flys'],
+                    legs: ['3x10 bodyweight squats', '3x12 lunges', '2x15 calf raises'],
+                    arms: ['3x10 bicep curls (light)', '3x12 tricep dips', '2x15 hammer curls'],
+                    shoulders: ['3x10 shoulder press (light)', '3x12 lateral raises', '2x15 front raises'],
+                    glutes: ['3x10 glute bridges', '3x12 donkey kicks', '2x15 fire hydrants']
+                },
+                intermediate: {
+                    abs: ['4x12 hanging leg raises', '3x15 bicycle crunches', '3x45s plank'],
+                    chest: ['4x8 bench press (moderate)', '3x12 dumbbell flys', '3x10 push-ups'],
+                    back: ['4x8 pull-ups', '3x10 bent-over rows', '3x12 deadlifts (moderate)'],
+                    legs: ['4x8 squats (moderate)', '3x12 lunges', '3x10 step-ups'],
+                    arms: ['4x8 bicep curls', '3x12 tricep pushdowns', '3x10 skull crushers'],
+                    shoulders: ['4x8 overhead press', '3x12 lateral raises', '3x10 rear delt flys'],
+                    glutes: ['4x8 hip thrusts', '3x12 glute kickbacks', '3x15 sumo squats']
+                },
+                advanced: {
+                    abs: ['5x15 weighted crunches', '4x20 cable woodchoppers', '3x60s plank'],
+                    chest: ['5x5 bench press (heavy)', '4x10 incline dumbbell press', '3x12 cable flys'],
+                    back: ['5x5 deadlifts (heavy)', '4x8 weighted pull-ups', '3x12 barbell rows'],
+                    legs: ['5x5 barbell squats (heavy)', '4x10 lunges (weighted)', '3x12 leg press'],
+                    arms: ['5x5 barbell curls', '4x10 weighted dips', '3x12 concentration curls'],
+                    shoulders: ['5x5 military press', '4x10 Arnold press', '3x12 upright rows'],
+                    glutes: ['5x5 hip thrusts (heavy)', '4x10 single-leg glute bridges', '3x12 barbell sumo squats']
+                }
+            }
+        };
+        // Generate suggestion based on inputs
+        if (bodyParts && bodyParts.length > 0) {
+            // Select one body part randomly for variety (or first selected)
+            const selectedPart = bodyParts[Math.floor(Math.random() * bodyParts.length)];
+            suggestion = workouts[goal][level][selectedPart].join(', ');
         } else {
-            suggestion = 'Log workouts for tailored suggestions!';
+            // Fallback: General workout for goal and level
+            suggestion = workouts[goal][level].general?.join(', ') || 'Log workouts for tailored suggestions!';
         }
     }
     // Display suggestion in output div
@@ -291,36 +381,36 @@ form.addEventListener('submit', (e) => {
             gtag('event', 'workout_logged', {
                 'event_category': 'Gym Tracker',
                 'event_label': exercise,
-                'value': 1,
-                'distance': distance || 'none'
-            });
-        }
+            'value': 1,
+            'distance': distance || 'none'
+        });
     }
+}
 
-    saveWorkouts();
-    renderWorkouts();
+saveWorkouts();
+renderWorkouts();
 
-    document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-    form.reset();
+document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+form.reset();
 });
 
 // Handle Clear Workouts button
 clearButton.addEventListener('click', () => {
-    // Move completed workouts' timestamps to completedWorkouts
-    workouts.forEach(workout => {
-        if (workout.completed) {
-            completedWorkouts.push(workout.timestamp);
-        }
-    });
-    workouts = []; // Clear current workout list
-    saveWorkouts(); // Save both arrays
-    renderWorkouts(); // Re-render list (progress persists)
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'workouts_cleared', {
-            'event_category': 'Gym Tracker',
-            'event_label': 'Clear Button'
-        });
+// Move completed workouts' timestamps to completedWorkouts
+workouts.forEach(workout => {
+    if (workout.completed) {
+        completedWorkouts.push(workout.timestamp);
     }
+});
+workouts = []; // Clear current workout list
+saveWorkouts(); // Save both arrays
+renderWorkouts(); // Re-render list (progress persists)
+if (typeof gtag !== 'undefined') {
+    gtag('event', 'workouts_cleared', {
+        'event_category': 'Gym Tracker',
+        'event_label': 'Clear Button'
+    });
+}
 });
 
 // Set random quote on page load
