@@ -1,11 +1,19 @@
 // Get DOM elements for interaction
-const form = document.getElementById('workout-form'); // Form for logging workouts
-const workoutList = document.getElementById('workout-list'); // Container for workout items
-const clearButton = document.getElementById('clear-workouts'); // Button to clear workout list
-const progressText = document.getElementById('progress-text'); // Progress display text
-const goalForm = document.getElementById('goal-form'); // Goal form for fitness goal, level, body parts (Day 3)
-const suggestButton = document.getElementById('suggest-workout'); // Suggest Workout button (Day 2)
-const suggestionOutput = document.getElementById('suggestion-output'); // Output for AI suggestions (Day 2)
+const form = document.getElementById('workout-form');
+const workoutList = document.getElementById('workout-list');
+const clearButton = document.getElementById('clear-workouts');
+const progressText = document.getElementById('progress-text');
+const goalForm = document.getElementById('goal-form');
+const suggestButton = document.getElementById('suggest-workout');
+const suggestionOutput = document.getElementById('suggestion-output');
+const ctx = document.getElementById('progressChart')?.getContext('2d');
+const chartTypeSelect = document.getElementById('chart-type');
+const timeViewSelect = document.getElementById('time-view');
+const filterTypeSelect = document.getElementById('filter-type');
+const goalProgressForm = document.getElementById('goal-progress-form');
+const streakText = document.getElementById('streak-text');
+const resetProgressButton = document.getElementById('reset-progress');
+const exportProgressButton = document.getElementById('export-progress');
 
 // Array of MHA-inspired motivational quotes
 const quotes = [
@@ -35,12 +43,20 @@ const quotes = [
     "Go beyond, Plus Ultra! 🌟"
 ];
 
-// Load workouts and completed workout timestamps from localStorage
-let workouts = JSON.parse(localStorage.getItem('workouts') || '[]'); // Current workout list
-let completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts') || '[]'); // Cleared completed timestamps
-let lastResetDay = localStorage.getItem('lastResetDay') || null; // Last day reset
-let lastResetWeek = localStorage.getItem('lastResetWeek') || null; // Last week reset
-let editingIndex = -1; // Track index of workout being edited
+// Load data from localStorage
+let workouts = JSON.parse(localStorage.getItem('workouts') || '[]');
+let completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts') || '[]');
+let workoutsLog = JSON.parse(localStorage.getItem('workoutsLog') || '[]');
+let lastResetDay = localStorage.getItem('lastResetDay') || null;
+let lastResetWeek = localStorage.getItem('lastResetWeek') || null;
+let chartType = localStorage.getItem('chartType') || 'bar';
+let timeView = localStorage.getItem('timeView') || 'weekly';
+let filterType = localStorage.getItem('filterType') || 'all';
+let workoutGoal = JSON.parse(localStorage.getItem('workoutGoal')) || { value: null, period: 'weekly' };
+let lastWorkoutDate = localStorage.getItem('lastWorkoutDate') || null;
+let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
+let editingIndex = -1;
+let chartInstance = null;
 
 // Clean completedWorkouts and reset counters if needed
 const now = new Date();
@@ -48,113 +64,306 @@ const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
 const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-// Clean invalid or future timestamps and reset for new day/week/month
-completedWorkouts = completedWorkouts.filter(t => {
+// Clean invalid or future timestamps and ensure unique entries
+completedWorkouts = [...new Set(completedWorkouts.filter(t => {
     try {
         const date = new Date(t);
-        return date <= now && date >= monthStart; // Keep only current month’s valid timestamps
+        return date <= now && date >= monthStart;
     } catch (e) {
-        return false; // Remove invalid timestamps
+        return false;
     }
-});
+}))];
 
 // Reset Today if new day
 if (!lastResetDay || new Date(lastResetDay) < today) {
-    completedWorkouts = completedWorkouts.filter(t => new Date(t) < today); // Remove today’s timestamps
+    completedWorkouts = completedWorkouts.filter(t => new Date(t) < today);
     lastResetDay = now.toISOString();
 }
 
 // Reset Week if new week (Sunday start)
 if (!lastResetWeek || new Date(lastResetWeek) < weekStart) {
-    completedWorkouts = completedWorkouts.filter(t => new Date(t) < weekStart); // Remove week’s timestamps
+    completedWorkouts = completedWorkouts.filter(t => new Date(t) < weekStart);
     lastResetWeek = now.toISOString();
 }
 
-// Save cleaned data
-localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
-localStorage.setItem('lastResetDay', lastResetDay);
-localStorage.setItem('lastResetWeek', lastResetWeek);
-
-// Save workouts and metadata to localStorage
+// Save all data to localStorage
 function saveWorkouts() {
     localStorage.setItem('workouts', JSON.stringify(workouts));
     localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
     localStorage.setItem('lastResetDay', lastResetDay);
     localStorage.setItem('lastResetWeek', lastResetWeek);
+    localStorage.setItem('workoutsLog', JSON.stringify(workoutsLog));
+    localStorage.setItem('chartType', chartType);
+    localStorage.setItem('timeView', timeView);
+    localStorage.setItem('filterType', filterType);
+    localStorage.setItem('workoutGoal', JSON.stringify(workoutGoal));
+    localStorage.setItem('lastWorkoutDate', lastWorkoutDate);
+    localStorage.setItem('currentStreak', currentStreak);
+}
+
+// Categorize workouts for filtering
+function categorizeWorkout(workoutText) {
+    const lowerText = workoutText.toLowerCase();
+    if (lowerText.includes('crunch') || lowerText.includes('plank') || lowerText.includes('leg raise')) return 'abs';
+    if (lowerText.includes('push-up') || lowerText.includes('bench') || lowerText.includes('chest')) return 'chest';
+    if (lowerText.includes('pull-up') || lowerText.includes('row') || lowerText.includes('deadlift')) return 'back';
+    if (lowerText.includes('squat') || lowerText.includes('lunge') || lowerText.includes('leg press')) return 'legs';
+    if (lowerText.includes('curl') || lowerText.includes('dip') || lowerText.includes('tricep')) return 'arms';
+    if (lowerText.includes('press') || lowerText.includes('raise') || lowerText.includes('shoulder')) return 'shoulders';
+    if (lowerText.includes('glute') || lowerText.includes('hip thrust') || lowerText.includes('kickback')) return 'glutes';
+    if (lowerText.includes('run') || lowerText.includes('jog') || lowerText.includes('burpee')) return 'cardio';
+    return 'other';
+}
+
+// Update streak based on completed workout
+function updateStreak() {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0];
+
+    if (!lastWorkoutDate) {
+        currentStreak = 1;
+        lastWorkoutDate = today;
+    } else if (lastWorkoutDate === today) {
+        return;
+    } else if (lastWorkoutDate === yesterday) {
+        currentStreak += 1;
+        lastWorkoutDate = today;
+    } else {
+        currentStreak = 1;
+        lastWorkoutDate = today;
+    }
+
+    streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
+    saveWorkouts();
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'streak_updated', { 'event_category': 'Gym Tracker', 'event_label': `Streak: ${currentStreak}` });
+    }
+}
+
+// Update goal progress display
+function updateGoalProgress() {
+    if (!workoutGoal.value) {
+        document.getElementById('goal-progress-text').textContent = 'Goal: Not set';
+        document.getElementById('goal-progress-fill').style.width = '0%';
+        return;
+    }
+
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startDate = workoutGoal.period === 'weekly' ? weekStart : monthStart;
+    const uniqueTimestamps = [...new Set([
+        ...workouts.filter(w => w.completed && new Date(w.timestamp) >= startDate).map(w => w.timestamp),
+        ...completedWorkouts.filter(t => new Date(t) >= startDate)
+    ])];
+    const completedCount = uniqueTimestamps.length;
+    const progressPercent = Math.min((completedCount / workoutGoal.value) * 100, 100);
+
+    document.getElementById('goal-progress-text').textContent = `Goal: ${completedCount}/${workoutGoal.value} (${workoutGoal.period})`;
+    const progressFill = document.getElementById('goal-progress-fill');
+    progressFill.style.width = `${progressPercent}%`;
+    progressFill.classList.toggle('completed', completedCount >= workoutGoal.value);
+
+    if (typeof gtag !== 'undefined' && completedCount >= workoutGoal.value) {
+        gtag('event', 'goal_achieved', { 'event_category': 'Gym Tracker', 'event_label': `${workoutGoal.value} workouts (${workoutGoal.period})` });
+    }
 }
 
 // Update progress counts for completed workouts only
 function updateProgress() {
-    const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Count completed workouts in current list and cleared completed workouts
-    const todayCount = workouts.filter(w => w.completed && new Date(w.timestamp) >= today).length +
-                      completedWorkouts.filter(t => new Date(t) >= today).length;
-    const weekCount = workouts.filter(w => w.completed && new Date(w.timestamp) >= weekStart).length +
-                      completedWorkouts.filter(t => new Date(t) >= weekStart).length;
-    const monthCount = workouts.filter(w => w.completed && new Date(w.timestamp) >= monthStart).length +
-                       completedWorkouts.filter(t => new Date(t) >= monthStart).length;
+    const todayTimestamps = [...new Set([
+        ...workouts.filter(w => w.completed && new Date(w.timestamp) >= today).map(w => w.timestamp),
+        ...completedWorkouts.filter(t => new Date(t) >= today)
+    ])];
+    const weekTimestamps = [...new Set([
+        ...workouts.filter(w => w.completed && new Date(w.timestamp) >= weekStart).map(w => w.timestamp),
+        ...completedWorkouts.filter(t => new Date(t) >= weekStart)
+    ])];
+    const monthTimestamps = [...new Set([
+        ...workouts.filter(w => w.completed && new Date(w.timestamp) >= monthStart).map(w => w.timestamp),
+        ...completedWorkouts.filter(t => new Date(t) >= monthStart)
+    ])];
 
-    // Update progress display
+    const todayCount = todayTimestamps.length;
+    const weekCount = weekTimestamps.length;
+    const monthCount = monthTimestamps.length;
+
     progressText.textContent = `Today: ${todayCount} | Week: ${weekCount} | Month: ${monthCount}`;
 
-    // Track progress view in GA4
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'progress_viewed', {
-            'event_category': 'Gym Tracker',
-            'event_label': 'Progress Update',
-            'value': todayCount
+        gtag('event', 'progress_viewed', { 'event_category': 'Gym Tracker', 'event_label': 'Progress Update', 'value': todayCount });
+    }
+}
+
+// Prepare chart data based on time view and filter
+function getChartData() {
+    const now = new Date();
+    let labels = [];
+    let data = [];
+
+    // Combine and deduplicate workouts by timestamp
+    const uniqueTimestamps = new Set([
+        ...workouts.filter(w => w.completed && (filterType === 'all' || categorizeWorkout(w.text) === filterType)).map(w => w.timestamp),
+        ...completedWorkouts
+    ]);
+    const filteredWorkouts = [...uniqueTimestamps].map(t => {
+        const workout = workouts.find(w => w.timestamp === t) || { text: 'Workout', completed: true, timestamp: t };
+        return { ...workout, text: workout.text || 'Workout' };
+    }).filter(w => w.completed && (filterType === 'all' || categorizeWorkout(w.text) === filterType));
+
+    if (timeView === 'weekly') {
+        labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        data = Array(7).fill(0); // Initialize array with zeros
+        filteredWorkouts.forEach(w => {
+            const workoutDate = new Date(w.timestamp);
+            const dayIndex = (workoutDate.getDay() + 6) % 7; // Shift Sunday (0) to index 6, Monday (1) to 0, etc.
+            if (workoutDate >= weekStart && workoutDate < new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)) {
+                data[dayIndex]++;
+            }
         });
+    } else if (timeView === 'monthly') {
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        labels = Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString());
+        data = labels.map((_, i) => {
+            const dayStart = new Date(now.getFullYear(), now.getMonth(), i + 1);
+            const dayEnd = new Date(now.getFullYear(), now.getMonth(), i + 2);
+            return filteredWorkouts.filter(w => {
+                const workoutDate = new Date(w.timestamp);
+                return workoutDate >= dayStart && workoutDate < dayEnd;
+            }).length;
+        });
+    } else if (timeView === 'yearly') {
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        data = labels.map((_, i) => {
+            const monthStart = new Date(now.getFullYear(), i, 1);
+            const monthEnd = new Date(now.getFullYear(), i + 1, 0);
+            return filteredWorkouts.filter(w => {
+                const workoutDate = new Date(w.timestamp);
+                return workoutDate >= monthStart && workoutDate <= monthEnd;
+            }).length;
+        });
+    }
+
+    // Ensure non-empty data to prevent chart failure
+    if (!labels.length || !data.length || data.every(val => val === 0)) {
+        labels = ['No Data'];
+        data = [0];
+    }
+
+    return { labels, data };
+}
+
+// Update Chart.js chart
+function updateChart() {
+    if (!ctx) {
+        console.error('Chart canvas context not found');
+        return;
+    }
+
+    try {
+        const { labels, data } = getChartData();
+        if (chartInstance) chartInstance.destroy();
+
+        const config = {
+            type: chartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: `Workouts Completed (${filterType === 'all' ? 'All' : filterType})`,
+                    data: data,
+                    backgroundColor: chartType === 'pie' ? [
+                        '#ff6f61', '#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#e91e63', '#00bcd4', '#cddc39', '#ffeb3b'
+                    ] : '#ff6f61',
+                    borderColor: chartType === 'pie' ? '#fff' : '#e55a50',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuad'
+                },
+                scales: chartType === 'bar' ? {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Number of Workouts' }
+                    },
+                    x: {
+                        title: { display: true, text: timeView.charAt(0).toUpperCase() + timeView.slice(1) }
+                    }
+                } : {},
+                plugins: {
+                    legend: {
+                        display: chartType === 'pie'
+                    }
+                }
+            }
+        };
+
+        chartInstance = new Chart(ctx, config);
+        updateGoalProgress();
+    } catch (error) {
+        console.error('Error updating chart:', error);
     }
 }
 
 // Render workouts to the DOM
 function renderWorkouts() {
-    workoutList.innerHTML = ''; // Clear current list
+    workoutList.innerHTML = '';
     workouts.forEach((workout, index) => {
         const workoutItem = document.createElement('div');
         workoutItem.classList.add('workout-item');
         if (workout.completed) workoutItem.classList.add('completed');
 
-        // Checkbox for marking workout complete
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = workout.completed;
         checkbox.addEventListener('change', () => {
             workouts[index].completed = checkbox.checked;
             workoutItem.classList.toggle('completed', checkbox.checked);
+            if (checkbox.checked) {
+                if (!completedWorkouts.includes(workout.timestamp)) {
+                    completedWorkouts.push(workout.timestamp);
+                    updateStreak();
+                }
+            } else {
+                completedWorkouts = completedWorkouts.filter(t => t !== workout.timestamp);
+            }
             saveWorkouts();
+            updateChart();
             updateProgress();
             if (typeof gtag !== 'undefined') {
-                gtag('event', 'workout_completed', {
-                    'event_category': 'Gym Tracker',
-                    'event_label': workout.text,
-                    'value': checkbox.checked ? 1 : 0
-                });
+                gtag('event', 'workout_completed', { 'event_category': 'Gym Tracker', 'event_label': workout.text, 'value': checkbox.checked ? 1 : 0 });
             }
         });
 
-        // Display workout text
         const textSpan = document.createElement('span');
         textSpan.textContent = workout.text;
 
-        // Edit button to pre-fill form
         const editButton = document.createElement('button');
         editButton.textContent = 'Edit';
         editButton.classList.add('edit-button');
         editButton.addEventListener('click', () => {
+            if (workouts[index].completed) {
+                completedWorkouts = completedWorkouts.filter(t => t !== workouts[index].timestamp);
+            }
             const parts = workout.text.split(': ');
             const exercise = parts[0];
             const details = parts[1] ? parts[1].split(', ') : [];
-            let sets = '', reps = '', weight = '', distance = '';
+            let sets = '', reps = '', weight = '', distance = '', time = '', timeUnit = 'seconds';
             details.forEach(detail => {
                 if (detail.includes('set')) sets = detail.split(' ')[0];
                 if (detail.includes('rep')) reps = detail.split(' ')[0];
                 if (detail.includes('kg')) weight = detail.split(' ')[0];
                 if (detail.includes('km')) distance = detail.split(' ')[0];
+                if (detail.includes('second') || detail.includes('minute')) {
+                    time = detail.split(' ')[0];
+                    timeUnit = detail.includes('second') ? 'seconds' : 'minutes';
+                }
             });
 
             document.getElementById('exercise').value = exercise;
@@ -162,17 +371,15 @@ function renderWorkouts() {
             document.getElementById('reps').value = reps;
             document.getElementById('weight').value = weight;
             document.getElementById('distance').value = distance;
+            document.getElementById('time').value = time;
+            document.getElementById('time-unit').value = timeUnit;
             editingIndex = index;
 
             if (typeof gtag !== 'undefined') {
-                gtag('event', 'workout_edit_started', {
-                    'event_category': 'Gym Tracker',
-                    'event_label': workout.text
-                });
+                gtag('event', 'workout_edit_started', { 'event_category': 'Gym Tracker', 'event_label': workout.text });
             }
         });
 
-        // Delete button to remove workout
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
         deleteButton.classList.add('delete-button');
@@ -183,11 +390,9 @@ function renderWorkouts() {
             workouts.splice(index, 1);
             saveWorkouts();
             renderWorkouts();
+            updateChart();
             if (typeof gtag !== 'undefined') {
-                gtag('event', 'workout_deleted', {
-                    'event_category': 'Gym Tracker',
-                    'event_label': workout.text
-                });
+                gtag('event', 'workout_deleted', { 'event_category': 'Gym Tracker', 'event_label': workout.text });
             }
         });
 
@@ -198,31 +403,27 @@ function renderWorkouts() {
         workoutList.appendChild(workoutItem);
     });
     updateProgress();
+    updateChart();
+    updateGoalProgress();
 }
 
-// Handle goal form submission (Day 3)
+// Handle goal form submission
 goalForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const goal = document.getElementById('goal').value;
     const level = document.getElementById('fitness-level').value;
     const bodyParts = Array.from(document.querySelectorAll('input[name="body-part"]:checked')).map(input => input.value);
-    // Save goal, fitness level, and body parts to localStorage for AI suggestions
     localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyParts }));
     alert('Goal saved! Plus Ultra!');
-    // Track goal submission in GA4
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'goal_saved', {
-            'event_category': 'Gym Tracker',
-            'event_label': `${goal} (${level}, ${bodyParts.join(', ') || 'none'})`
-        });
+        gtag('event', 'goal_saved', { 'event_category': 'Gym Tracker', 'event_label': `${goal} (${level}, ${bodyParts.join(', ') || 'none'})` });
     }
 });
 
-// Handle Suggest Workout button (Day 3)
+// Handle Suggest Workout button
 suggestButton.addEventListener('click', () => {
     const { goal, level, bodyParts } = JSON.parse(localStorage.getItem('userGoal') || '{}');
     let suggestion = 'No goal set. Smash through!';
-    // Enhanced mock AI logic: Suggest 3 varied workouts based on goal, level, and body parts (Day 3)
     if (goal && level) {
         const workouts = {
             'Build Muscle': {
@@ -313,24 +514,16 @@ suggestButton.addEventListener('click', () => {
                 }
             }
         };
-        // Generate suggestion based on inputs
         if (bodyParts && bodyParts.length > 0) {
-            // Select one body part randomly for variety (or first selected)
             const selectedPart = bodyParts[Math.floor(Math.random() * bodyParts.length)];
             suggestion = workouts[goal][level][selectedPart].join(', ');
         } else {
-            // Fallback: General workout for goal and level
             suggestion = workouts[goal][level].general?.join(', ') || 'Log workouts for tailored suggestions!';
         }
     }
-    // Display suggestion in output div
     suggestionOutput.textContent = suggestion;
-    // Track suggestion request in GA4
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'workout_suggested', {
-            'event_category': 'Gym Tracker',
-            'event_label': suggestion
-        });
+        gtag('event', 'workout_suggested', { 'event_category': 'Gym Tracker', 'event_label': suggestion });
     }
 });
 
@@ -342,6 +535,8 @@ form.addEventListener('submit', (e) => {
     const reps = document.getElementById('reps').value;
     const weight = document.getElementById('weight').value;
     const distance = document.getElementById('distance').value;
+    const time = document.getElementById('time').value;
+    const timeUnit = document.getElementById('time-unit').value;
 
     let workoutText = exercise;
     const details = [];
@@ -349,6 +544,7 @@ form.addEventListener('submit', (e) => {
     if (reps) details.push(`${reps} rep${reps == 1 ? '' : 's'}`);
     if (weight) details.push(`${weight}kg`);
     if (distance) details.push(`${distance}km`);
+    if (time) details.push(`${time} ${timeUnit}`);
     if (details.length > 0) workoutText += `: ${details.join(', ')}`;
 
     if (editingIndex >= 0) {
@@ -361,57 +557,138 @@ form.addEventListener('submit', (e) => {
             completed: wasCompleted,
             timestamp: workouts[editingIndex].timestamp
         };
-        if (wasCompleted) {
+        if (wasCompleted && !completedWorkouts.includes(workouts[editingIndex].timestamp)) {
             completedWorkouts.push(workouts[editingIndex].timestamp);
-        }
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'workout_edited', {
-                'event_category': 'Gym Tracker',
-                'event_label': workoutText
-            });
+            updateStreak();
         }
         editingIndex = -1;
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'workout_edited', { 'event_category': 'Gym Tracker', 'event_label': workoutText });
+        }
     } else {
+        const timestamp = new Date().toISOString();
         workouts.push({
             text: workoutText,
             completed: false,
-            timestamp: new Date().toISOString()
+            timestamp: timestamp
         });
         if (typeof gtag !== 'undefined') {
             gtag('event', 'workout_logged', {
                 'event_category': 'Gym Tracker',
                 'event_label': exercise,
-            'value': 1,
-            'distance': distance || 'none'
-        });
+                'value': 1,
+                'distance': distance || 'none',
+                'time': time ? `${time} ${timeUnit}` : 'none'
+            });
+        }
     }
-}
 
-saveWorkouts();
-renderWorkouts();
-
-document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-form.reset();
+    saveWorkouts();
+    renderWorkouts();
+    document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+    form.reset();
 });
 
 // Handle Clear Workouts button
 clearButton.addEventListener('click', () => {
-// Move completed workouts' timestamps to completedWorkouts
-workouts.forEach(workout => {
-    if (workout.completed) {
-        completedWorkouts.push(workout.timestamp);
+    workouts.forEach(workout => {
+        if (workout.completed && !completedWorkouts.includes(workout.timestamp)) {
+            completedWorkouts.push(workout.timestamp);
+        }
+    });
+    workouts = [];
+    saveWorkouts();
+    renderWorkouts();
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'workouts_cleared', { 'event_category': 'Gym Tracker', 'event_label': 'Clear Button' });
     }
 });
-workouts = []; // Clear current workout list
-saveWorkouts(); // Save both arrays
-renderWorkouts(); // Re-render list (progress persists)
-if (typeof gtag !== 'undefined') {
-    gtag('event', 'workouts_cleared', {
-        'event_category': 'Gym Tracker',
-        'event_label': 'Clear Button'
-    });
-}
+
+// Handle chart type and time view changes
+chartTypeSelect.addEventListener('change', (e) => {
+    chartType = e.target.value;
+    saveWorkouts();
+    updateChart();
 });
+
+timeViewSelect.addEventListener('change', (e) => {
+    timeView = e.target.value;
+    saveWorkouts();
+    updateChart();
+});
+
+filterTypeSelect.addEventListener('change', (e) => {
+    filterType = e.target.value;
+    saveWorkouts();
+    updateChart();
+});
+
+// Handle goal progress form submission
+goalProgressForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    workoutGoal.value = parseInt(document.getElementById('workout-goal').value);
+    workoutGoal.period = document.getElementById('goal-period').value;
+    saveWorkouts();
+    updateGoalProgress();
+    updateChart();
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'workout_goal_set', { 'event_category': 'Gym Tracker', 'event_label': `${workoutGoal.value} workouts (${workoutGoal.period})` });
+    }
+});
+
+// Handle reset progress
+resetProgressButton.addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset all progress data?')) {
+        workouts = [];
+        completedWorkouts = [];
+        workoutsLog = [];
+        lastResetDay = null;
+        lastResetWeek = null;
+        lastWorkoutDate = null;
+        currentStreak = 0;
+        workoutGoal = { value: null, period: 'weekly' };
+        saveWorkouts();
+        renderWorkouts();
+        updateChart();
+        updateGoalProgress();
+        streakText.textContent = '🔥 Streak: 0 days';
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'progress_reset', { 'event_category': 'Gym Tracker', 'event_label': 'Reset Progress' });
+        }
+    }
+});
+
+// Handle export progress
+exportProgressButton.addEventListener('click', () => {
+    const { labels, data } = getChartData();
+    const csvContent = `data:text/csv;charset=utf-8,${timeView.charAt(0).toUpperCase() + timeView.slice(1)},Workouts\n` +
+        labels.map((label, i) => `${label},${data[i]}`).join('\n');
+    const csvLink = document.createElement('a');
+    csvLink.setAttribute('href', encodeURI(csvContent));
+    csvLink.setAttribute('download', `workout_progress_${timeView}.csv`);
+    csvLink.click();
+
+    if (chartInstance) {
+        const imageLink = document.createElement('a');
+        imageLink.setAttribute('href', chartInstance.toBase64Image());
+        imageLink.setAttribute('download', `workout_progress_${timeView}.png`);
+        imageLink.click();
+    }
+
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'progress_exported', { 'event_category': 'Gym Tracker', 'event_label': `Exported ${timeView} view as CSV and image` });
+    }
+});
+
+// Initialize UI elements
+chartTypeSelect.value = chartType;
+timeViewSelect.value = timeView;
+filterTypeSelect.value = filterType;
+if (workoutGoal.value) {
+    document.getElementById('workout-goal').value = workoutGoal.value;
+    document.getElementById('goal-period').value = workoutGoal.period;
+}
+streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
 
 // Set random quote on page load
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];

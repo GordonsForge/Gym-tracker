@@ -1,0 +1,15 @@
+[33m7ab8b69[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mai-workout[m[33m, [m[1;31morigin/ai-workout[m[33m)[m Day 4: Add Jest tests for goal form, Suggest Workout button, and AI logic; document JSDOM test issues
+[33m4342633[m Day 3: Add goal dropdown, body part checkboxes, and enhanced AI suggestions with varied workouts
+[33m3cf13d7[m Day 2: Add goal form with fitness level dropdown and Suggest Workout button
+[33mb000ad2[m Test GitHub Actions with Bearer Token
+[33m61ce329[m Test GitHub Actions on ai-workout branch
+[33m533853c[m Test GitHub Actions after secrets fix
+[33m94e2b8e[m Test GitHub Actions after fixing 401 error
+[33m751070d[m Test GitHub Actions with existing X app
+[33mc489259[m Test GitHub Actions workflow visibility
+[33m85449e7[m Add GitHub Actions workflow for X auto-post
+[33m7aa7ef8[m Test GitHub Actions with X app settings
+[33ma246778[m Test GitHub Actions with secrets
+[33m9d28986[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Updated gym tracker with distance field, Clear Workouts, progress tracking with resets, checkbox completion, and skipped-day handling
+[33mb912cc7[m Added two words to h3 under aside class
+[33m6b78e80[m Initial commit: Gym workout tracker with HTML/CSS/JS

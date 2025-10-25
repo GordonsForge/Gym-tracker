@@ -27,7 +27,7 @@
     <!-- Tracker section: Goal form, workout form, and workout list -->
     <section id="tracker" class="tracker">
         <h2>Log Your Workout</h2>
-        <!-- Goal form: Set fitness goal, level, and body parts for AI suggestions (Day 3) -->
+        <!-- Goal form: Set fitness goal, level, and body parts for AI suggestions -->
         <form id="goal-form">
             <label for="goal">Fitness Goal:</label>
             <select id="goal" required>
@@ -55,9 +55,9 @@
             </fieldset>
             <button type="submit">Save Goal</button>
         </form>
-        <!-- Suggest Workout button: Triggers AI workout suggestion (Day 2) -->
+        <!-- Suggest Workout button: Triggers AI workout suggestion -->
         <button id="suggest-workout">Suggest Workout</button>
-        <!-- Output for AI workout suggestions (Day 2) -->
+        <!-- Output for AI workout suggestions -->
         <div id="suggestion-output"></div>
 
         <!-- Workout form: Log exercise details -->
@@ -72,6 +72,14 @@
             <input type="number" id="weight">
             <label for="distance">Distance (km, optional):</label>
             <input type="number" id="distance" step="0.1">
+            <label for="time">Time (optional):</label>
+            <div class="time-input">
+                <input type="number" id="time" min="0" step="1">
+                <select id="time-unit">
+                    <option value="seconds">Seconds</option>
+                    <option value="minutes">Minutes</option>
+                </select>
+            </div>
             <button type="submit">Add Workout</button>
         </form>
         <!-- Button to clear workout list (preserves progress) -->
@@ -80,10 +88,63 @@
         <div id="workout-list"></div>
     </section>
 
-    <!-- Progress section: Displays completed workout counts -->
+    <!-- Progress section: Displays completed workout counts, chart, streak, and goals -->
     <section id="progress" class="progress">
         <h2>Your Progress</h2>
+        <!-- Chart type and view controls -->
+        <div class="chart-controls">
+            <label for="chart-type">Chart Type:</label>
+            <select id="chart-type">
+                <option value="bar">Bar</option>
+                <option value="pie">Pie</option>
+            </select>
+            <label for="time-view">Time View:</label>
+            <select id="time-view">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+            </select>
+            <label for="filter-type">Filter by Type:</label>
+            <select id="filter-type">
+                <option value="all">All</option>
+                <option value="abs">Abs</option>
+                <option value="chest">Chest</option>
+                <option value="back">Back</option>
+                <option value="legs">Legs</option>
+                <option value="arms">Arms</option>
+                <option value="shoulders">Shoulders</option>
+                <option value="glutes">Glutes</option>
+                <option value="cardio">Cardio</option>
+            </select>
+        </div>
+        <!-- Goal input -->
+        <div class="goal-progress">
+            <form id="goal-progress-form">
+                <label for="workout-goal">Workout Goal:</label>
+                <input type="number" id="workout-goal" min="1" placeholder="e.g., 3 workouts/week" required>
+                <select id="goal-period">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+                <button type="submit">Set Goal</button>
+            </form>
+            <p id="goal-progress-text">Goal: Not set</p>
+            <div id="goal-progress-bar" class="progress-bar">
+                <div id="goal-progress-fill" class="progress-fill"></div>
+            </div>
+        </div>
+        <!-- Streak display -->
+        <div class="streak">
+            <p id="streak-text">🔥 Streak: 0 days</p>
+        </div>
+        <!-- Chart canvas -->
+        <canvas id="progressChart"></canvas>
         <p id="progress-text">Today: 0 | Week: 0 | Month: 0</p>
+        <!-- Reset and export buttons -->
+        <div class="progress-actions">
+            <button id="reset-progress">Reset Progress</button>
+            <button id="export-progress">Download Progress</button>
+        </div>
     </section>
 
     <!-- Quote section: Random MHA-inspired motivational quote -->
@@ -103,6 +164,8 @@
         <p>Built by @Theanimedon1 with HTML & CSS | 2025</p>
     </footer>
 
+    <!-- Chart.js CDN for workout history visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <!-- Link to JavaScript for functionality -->
     <script src="script.js"></script>
 </body>

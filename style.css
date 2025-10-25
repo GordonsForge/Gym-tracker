@@ -69,7 +69,7 @@ body {
     margin-bottom: 20px; /* Space below headings */
 }
 
-/* Goal form: Grid layout for inputs and checkboxes (Day 3) */
+/* Goal form: Grid layout for inputs and checkboxes */
 #goal-form {
     display: grid;
     gap: 10px; /* Spacing between form elements */
@@ -84,7 +84,7 @@ body {
     border-radius: 5px;
 }
 
-/* Body part checkboxes: Grid layout for clarity (Day 3) */
+/* Body part checkboxes: Grid layout for clarity */
 #goal-form fieldset {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Responsive grid */
@@ -124,7 +124,7 @@ body {
     transform: scale(1.05);
 }
 
-/* Suggest Workout button: Coral-themed (Day 2) */
+/* Suggest Workout button: Coral-themed */
 #suggest-workout {
     background: #ff6f61;
     color: white;
@@ -133,7 +133,8 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-bottom: 10px; /* Space below button */
+    margin-bottom: 10px; /* Space below buttons */
+    margin-right: 10px; /* Space between buttons */
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
@@ -143,12 +144,19 @@ body {
     transform: scale(1.05);
 }
 
-/* Suggestion output: Styled like workout items (Day 2) */
+/* Suggestion output: Styled like workout items */
 #suggestion-output {
     padding: 10px;
     background: #f9f9f9; /* Light gray background */
     border-radius: 5px;
     margin-top: 10px; /* Space above output */
+    margin-bottom: 10px; /* Space below output */
+}
+
+/* Progress chart: Constrain size */
+#progressChart {
+    max-height: 300px;
+    width: 100%;
 }
 
 /* Tracker form: Grid layout for inputs */
@@ -157,11 +165,25 @@ body {
     gap: 10px; /* Spacing between form elements */
 }
 
-/* Form inputs (exercise, sets, reps, weight, distance) */
+/* Form inputs (exercise, sets, reps, weight, distance, time) */
 .tracker input {
     padding: 10px;
     font-size: 1rem;
     border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px;
+}
+
+/* Time input container */
+.time-input {
+    display: flex;
+    gap: 5px;
+}
+
+.time-input input,
+.time-input select {
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
     border-radius: 5px;
 }
 
@@ -265,6 +287,116 @@ body {
     transform: scale(1.05);
 }
 
+/* Chart controls: Flexbox for dropdowns */
+.chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.chart-controls label {
+    font-size: 1rem;
+    margin-right: 5px;
+}
+
+.chart-controls select {
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Goal progress section */
+.goal-progress {
+    margin-bottom: 20px;
+}
+
+#goal-progress-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#goal-progress-form input,
+#goal-progress-form select {
+    padding: 8px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#goal-progress-form button {
+    background: #ff6f61;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+#goal-progress-form button:hover {
+    background: #e55a50;
+    transform: scale(1.05);
+}
+
+/* Progress bar */
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4caf50; /* Deku green */
+    width: 0; /* Dynamically updated */
+    transition: width 0.3s ease-in-out; /* Smooth animation */
+}
+
+.progress-fill.completed {
+    background: #4caf50; /* Green when goal achieved */
+}
+
+/* Streak section */
+.streak {
+    margin-bottom: 20px;
+}
+
+#streak-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ff6f61; /* Coral for emphasis */
+}
+
+/* Progress actions (reset/export buttons) */
+.progress-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#reset-progress, #export-progress {
+    background: #ff6f61;
+    color: white;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+#reset-progress:hover, #export-progress:hover {
+    background: #e55a50;
+    transform: scale(1.05);
+}
+
 /* Progress section text: Bold for visibility */
 .progress p {
     font-size: 1.1rem;
@@ -306,5 +438,14 @@ footer {
     /* Responsive checkboxes */
     #goal-form fieldset {
         grid-template-columns: 1fr; /* Stack on small screens */
+    }
+    .chart-controls {
+        flex-direction: column;
+    }
+    #goal-progress-form {
+        flex-direction: column;
+    }
+    .progress-actions {
+        flex-direction: column;
     }
 }
