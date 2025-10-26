@@ -449,3 +449,176 @@ footer {
         flex-direction: column;
     }
 }
+
+/* Beta Signup Section: Card-like container */
+.beta-signup {
+    padding: 40px;
+    max-width: 800px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading and paragraph styling */
+.beta-signup h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.beta-signup p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* HubSpot form styling */
+#hubspotForm {
+    margin-top: 10px;
+}
+
+/* Ensure HubSpot form inputs match app style */
+.hs-form-frame input[type="text"],
+.hs-form-frame input[type="email"],
+.hs-form-frame select {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.hs-form-frame button[type="submit"] {
+    background: #ff6f61; /* Coral */
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+.hs-form-frame button[type="submit"]:hover {
+    background: #e55a50;
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .beta-signup {
+        padding: 20px;
+    }
+}/* Beta button in hero section */
+.beta-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background: #ff6f61; /* Coral */
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 10px;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+.beta-button:hover {
+    background: #e55a50;
+    transform: scale(1.05);
+}
+
+/* Beta link in footer */
+.beta-link {
+    color: #ff6f61;
+    text-decoration: none;
+}
+
+.beta-link:hover {
+    text-decoration: underline;
+}
+
+/* Back button in beta page header */
+.back-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background: #4caf50; /* Deku green */
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 10px;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+.back-button:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+/* Beta page section: Card-like container */
+.beta-page {
+    padding: 40px;
+    max-width: 800px;
+    margin: 20px auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Beta page heading and paragraph */
+.beta-page h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.beta-page p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* HubSpot form styling */
+#hubspotForm {
+    margin-top: 10px;
+}
+
+.hs-form-frame input[type="text"],
+.hs-form-frame input[type="email"],
+.hs-form-frame select {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.hs-form-frame button[type="submit"] {
+    background: #ff6f61; /* Coral */
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+}
+
+.hs-form-frame button[type="submit"]:hover {
+    background: #e55a50;
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .beta-page {
+        padding: 20px;
+    }
+    .beta-button, .back-button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
