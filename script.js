@@ -216,12 +216,13 @@ function getChartData() {
 
     if (timeView === 'weekly') {
         labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+        const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000); // Next Monday 00:00
         data = Array(7).fill(0); // Initialize array with zeros
         filteredWorkouts.forEach(w => {
             const workoutDate = new Date(w.timestamp);
-            const dayIndex = (workoutDate.getDay() + 6) % 7; // Shift Sunday (0) to index 6, Monday (1) to 0, etc.
-            if (workoutDate >= weekStart && workoutDate < new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000)) {
+            if (workoutDate >= weekStart && workoutDate < weekEnd) {
+                const dayIndex = (workoutDate.getDay() + 6) % 7; // Monday = 0, Sunday = 6
                 data[dayIndex]++;
             }
         });
