@@ -502,7 +502,7 @@ suggestButton.addEventListener('click', async () => {
     }
 
     try {
-        const response = await fetch('http://localhost:3000/api/suggestions', {
+        const response = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/suggestions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi })
@@ -516,7 +516,8 @@ suggestButton.addEventListener('click', async () => {
             suggestionOutput.textContent = `Error: ${data.message || 'Try again'}`;
         }
     } catch (err) {
-        suggestionOutput.textContent = 'Backend not running. Run: npm start in backend folder.';
+        console.error('API Error:', err);
+        suggestionOutput.textContent = 'Failed to connect to backend. Please try again later.';
     }
 
     if (typeof gtag !== 'undefined') {
