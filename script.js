@@ -14,6 +14,12 @@ const goalProgressForm = document.getElementById('goal-progress-form');
 const streakText = document.getElementById('streak-text');
 const resetProgressButton = document.getElementById('reset-progress');
 const exportProgressButton = document.getElementById('export-progress');
+const heightInput = document.getElementById('height');
+const heightUnitSelect = document.getElementById('height-unit');
+const weightInput = document.getElementById('weight');
+const weightUnitSelect = document.getElementById('weight-unit');
+const bmiOutput = document.getElementById('bmi');
+const bmiCategory = document.getElementById('bmi-category');
 
 // Array of MHA-inspired motivational quotes
 const quotes = [
@@ -57,6 +63,41 @@ let lastWorkoutDate = localStorage.getItem('lastWorkoutDate') || null;
 let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
 let editingIndex = -1;
 let chartInstance = null;
+
+// Calculate BMI and update display
+function calculateBMI() {
+    const height = parseFloat(heightInput.value);
+    const weight = parseFloat(weightInput.value);
+    const heightUnit = heightUnitSelect.value;
+    const weightUnit = weightUnitSelect.value;
+
+    if (!height || !weight || height <= 0 || weight <= 0) {
+        bmiOutput.value = '';
+        bmiCategory.textContent = '';
+        return;
+    }
+
+    let bmi;
+    if (heightUnit === 'cm' && weightUnit === 'kg') {
+        const heightMeters = height / 100;
+        bmi = weight / (heightMeters * heightMeters);
+    } else if (heightUnit === 'inches' && weightUnit === 'lbs') {
+        bmi = 703 * weight / (height * height);
+    } else {
+        bmiOutput.value = '';
+        bmiCategory.textContent = 'Please use consistent units (cm/kg or inches/lbs)';
+        return;
+    }
+
+    bmi = bmi.toFixed(1);
+    bmiOutput.value = bmi;
+    let category = '';
+    if (bmi < 18.5) category = 'Underweight';
+    else if (bmi >= 18.5 && bmi <= 24.9) category = 'Normal';
+    else if (bmi >= 25 && bmi <= 29.9) category = 'Overweight';
+    else category = 'Obese';
+    bmiCategory.textContent = `Category: ${category}`;
+}
 
 // Clean completedWorkouts and reset counters if needed
 const now = new Date();
@@ -204,7 +245,6 @@ function getChartData() {
     let labels = [];
     let data = [];
 
-    // Combine and deduplicate workouts by timestamp
     const uniqueTimestamps = new Set([
         ...workouts.filter(w => w.completed && (filterType === 'all' || categorizeWorkout(w.text) === filterType)).map(w => w.timestamp),
         ...completedWorkouts
@@ -216,13 +256,13 @@ function getChartData() {
 
     if (timeView === 'weekly') {
         labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)); // Monday
-        const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000); // Next Monday 00:00
-        data = Array(7).fill(0); // Initialize array with zeros
+        const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+        const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+        data = Array(7).fill(0);
         filteredWorkouts.forEach(w => {
             const workoutDate = new Date(w.timestamp);
             if (workoutDate >= weekStart && workoutDate < weekEnd) {
-                const dayIndex = (workoutDate.getDay() + 6) % 7; // Monday = 0, Sunday = 6
+                const dayIndex = (workoutDate.getDay() + 6) % 7;
                 data[dayIndex]++;
             }
         });
@@ -249,7 +289,6 @@ function getChartData() {
         });
     }
 
-    // Ensure non-empty data to prevent chart failure
     if (!labels.length || !data.length || data.every(val => val === 0)) {
         labels = ['No Data'];
         data = [0];
@@ -413,118 +452,78 @@ goalForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const goal = document.getElementById('goal').value;
     const level = document.getElementById('fitness-level').value;
-    const bodyParts = Array.from(document.querySelectorAll('input[name="body-part"]:checked')).map(input => input.value);
-    localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyParts }));
+    const bodyPart = document.getElementById('body-part').value;
+    const height = parseFloat(document.getElementById('height').value);
+    const heightUnit = document.getElementById('height-unit').value;
+    const weight = parseFloat(document.getElementById('weight').value);
+    const weightUnit = document.getElementById('weight-unit').value;
+
+    // Validate inputs
+    if (!goal || !level || !bodyPart) {
+        alert('Please select a goal, fitness level, and body part.');
+        return;
+    }
+    if (height <= 0 || weight <= 0) {
+        alert('Height and weight must be positive numbers.');
+        return;
+    }
+    if ((heightUnit === 'cm' && weightUnit !== 'kg') || (heightUnit === 'inches' && weightUnit !== 'lbs')) {
+        alert('Please use consistent units (cm/kg or inches/lbs).');
+        return;
+    }
+
+    const bmi = parseFloat(bmiOutput.value) || 0;
+    localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi }));
     alert('Goal saved! Plus Ultra!');
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'goal_saved', { 'event_category': 'Gym Tracker', 'event_label': `${goal} (${level}, ${bodyParts.join(', ') || 'none'})` });
+        gtag('event', 'goal_saved', {
+            'event_category': 'Gym Tracker',
+            'event_label': `${goal} (${level}, ${bodyPart}, BMI: ${bmi})`
+        });
     }
 });
 
-// Handle Suggest Workout button
-suggestButton.addEventListener('click', () => {
-    const { goal, level, bodyParts } = JSON.parse(localStorage.getItem('userGoal') || '{}');
-    let suggestion = 'No goal set. Smash through!';
-    if (goal && level) {
-        const workouts = {
-            'Build Muscle': {
-                beginner: {
-                    abs: ['3x10 crunches', '3x12 leg raises', '2x30s plank'],
-                    chest: ['3x10 push-ups', '3x12 incline push-ups', '2x15 chest dips'],
-                    back: ['3x8 bent-over rows (light)', '3x10 reverse flys', '2x12 supermans'],
-                    legs: ['3x10 bodyweight squats', '3x12 lunges', '2x15 calf raises'],
-                    arms: ['3x10 bicep curls (light)', '3x12 tricep dips', '2x15 hammer curls'],
-                    shoulders: ['3x10 shoulder press (light)', '3x12 lateral raises', '2x15 front raises'],
-                    glutes: ['3x10 glute bridges', '3x12 donkey kicks', '2x15 fire hydrants']
-                },
-                intermediate: {
-                    abs: ['4x12 hanging leg raises', '3x15 bicycle crunches', '3x45s plank'],
-                    chest: ['4x8 bench press (moderate)', '3x12 dumbbell flys', '3x10 push-ups'],
-                    back: ['4x8 pull-ups', '3x10 bent-over rows', '3x12 deadlifts (moderate)'],
-                    legs: ['4x8 squats (moderate)', '3x12 lunges', '3x10 step-ups'],
-                    arms: ['4x8 bicep curls', '3x12 tricep pushdowns', '3x10 skull crushers'],
-                    shoulders: ['4x8 overhead press', '3x12 lateral raises', '3x10 rear delt flys'],
-                    glutes: ['4x8 hip thrusts', '3x12 glute kickbacks', '3x15 sumo squats']
-                },
-                advanced: {
-                    abs: ['5x15 weighted crunches', '4x20 cable woodchoppers', '3x60s plank'],
-                    chest: ['5x5 bench press (heavy)', '4x10 incline dumbbell press', '3x12 cable flys'],
-                    back: ['5x5 deadlifts (heavy)', '4x8 weighted pull-ups', '3x12 barbell rows'],
-                    legs: ['5x5 barbell squats (heavy)', '4x10 lunges (weighted)', '3x12 leg press'],
-                    arms: ['5x5 barbell curls', '4x10 weighted dips', '3x12 concentration curls'],
-                    shoulders: ['5x5 military press', '4x10 Arnold press', '3x12 upright rows'],
-                    glutes: ['5x5 hip thrusts (heavy)', '4x10 single-leg glute bridges', '3x12 barbell sumo squats']
-                }
-            },
-            'Build Endurance': {
-                beginner: {
-                    abs: ['3x15 bicycle crunches', '3x20 mountain climbers', '2x30s hollow hold'],
-                    chest: ['3x15 push-ups', '3x20 chest dips', '2x30s isometric chest press'],
-                    back: ['3x15 supermans', '3x20 bodyweight rows', '2x30s plank rows'],
-                    legs: ['2km jog', '3x15 bodyweight squats', '3x20 walking lunges'],
-                    arms: ['3x15 arm circles', '3x20 tricep dips', '2x30s shadow boxing'],
-                    shoulders: ['3x15 shoulder taps', '3x20 front raises (light)', '2x30s lateral hold'],
-                    glutes: ['3x15 glute bridges', '3x20 donkey kicks', '2x30s squat hold']
-                },
-                intermediate: {
-                    abs: ['4x20 mountain climbers', '3x30 Russian twists', '3x45s plank'],
-                    chest: ['4x12 push-ups', '3x15 incline push-ups', '3x20 burpees'],
-                    back: ['4x12 bodyweight rows', '3x15 supermans', '3x20 plank rows'],
-                    legs: ['5km run', '3x20 lunges', '3x15 jump squats'],
-                    arms: ['4x12 bicep curls (light)', '3x15 tricep pushdowns', '3x20 shadow boxing'],
-                    shoulders: ['4x12 lateral raises', '3x15 shoulder press (light)', '3x20 Y-raises'],
-                    glutes: ['4x12 glute kickbacks', '3x15 sumo squats', '3x20 fire hydrants']
-                },
-                advanced: {
-                    abs: ['5x25 mountain climbers', '4x30 weighted Russian twists', '3x60s plank with leg lift'],
-                    chest: ['5x15 clapping push-ups', '4x20 incline dumbbell press', '3x25 burpees'],
-                    back: ['5x10 pull-ups', '4x15 deadlifts (moderate)', '3x20 bent-over rows'],
-                    legs: ['10km run', '4x20 jump lunges', '3x15 pistol squats'],
-                    arms: ['5x15 weighted dips', '4x20 hammer curls', '3x25 shadow boxing'],
-                    shoulders: ['5x10 overhead press', '4x15 rear delt flys', '3x20 lateral raises'],
-                    glutes: ['5x10 hip thrusts (moderate)', '4x15 single-leg glute bridges', '3x20 sumo squats']
-                }
-            },
-            'Build Strength': {
-                beginner: {
-                    abs: ['3x10 crunches', '3x12 leg raises', '2x30s plank'],
-                    chest: ['3x10 push-ups', '3x12 incline push-ups', '2x15 chest dips'],
-                    back: ['3x8 bodyweight rows', '3x10 supermans', '2x12 reverse flys'],
-                    legs: ['3x10 bodyweight squats', '3x12 lunges', '2x15 calf raises'],
-                    arms: ['3x10 bicep curls (light)', '3x12 tricep dips', '2x15 hammer curls'],
-                    shoulders: ['3x10 shoulder press (light)', '3x12 lateral raises', '2x15 front raises'],
-                    glutes: ['3x10 glute bridges', '3x12 donkey kicks', '2x15 fire hydrants']
-                },
-                intermediate: {
-                    abs: ['4x12 hanging leg raises', '3x15 bicycle crunches', '3x45s plank'],
-                    chest: ['4x8 bench press (moderate)', '3x12 dumbbell flys', '3x10 push-ups'],
-                    back: ['4x8 pull-ups', '3x10 bent-over rows', '3x12 deadlifts (moderate)'],
-                    legs: ['4x8 squats (moderate)', '3x12 lunges', '3x10 step-ups'],
-                    arms: ['4x8 bicep curls', '3x12 tricep pushdowns', '3x10 skull crushers'],
-                    shoulders: ['4x8 overhead press', '3x12 lateral raises', '3x10 rear delt flys'],
-                    glutes: ['4x8 hip thrusts', '3x12 glute kickbacks', '3x15 sumo squats']
-                },
-                advanced: {
-                    abs: ['5x15 weighted crunches', '4x20 cable woodchoppers', '3x60s plank'],
-                    chest: ['5x5 bench press (heavy)', '4x10 incline dumbbell press', '3x12 cable flys'],
-                    back: ['5x5 deadlifts (heavy)', '4x8 weighted pull-ups', '3x12 barbell rows'],
-                    legs: ['5x5 barbell squats (heavy)', '4x10 lunges (weighted)', '3x12 leg press'],
-                    arms: ['5x5 barbell curls', '4x10 weighted dips', '3x12 concentration curls'],
-                    shoulders: ['5x5 military press', '4x10 Arnold press', '3x12 upright rows'],
-                    glutes: ['5x5 hip thrusts (heavy)', '4x10 single-leg glute bridges', '3x12 barbell sumo squats']
-                }
-            }
-        };
-        if (bodyParts && bodyParts.length > 0) {
-            const selectedPart = bodyParts[Math.floor(Math.random() * bodyParts.length)];
-            suggestion = workouts[goal][level][selectedPart].join(', ');
-        } else {
-            suggestion = workouts[goal][level].general?.join(', ') || 'Log workouts for tailored suggestions!';
-        }
+// Handle BMI calculation on input change
+heightInput.addEventListener('input', calculateBMI);
+weightInput.addEventListener('input', calculateBMI);
+heightUnitSelect.addEventListener('change', calculateBMI);
+weightUnitSelect.addEventListener('change', calculateBMI);
+
+// Handle Suggest Workout button — LIVE API CALL
+suggestButton.addEventListener('click', async () => {
+    const goal = document.getElementById('goal').value;
+    const level = document.getElementById('fitness-level').value;
+    const bodyPart = document.getElementById('body-part').value;
+    const bmi = parseFloat(bmiOutput.value) || 0;
+
+    if (!goal || !level || !bodyPart) {
+        suggestionOutput.textContent = 'Please select a goal, fitness level, and body part first.';
+        return;
     }
-    suggestionOutput.textContent = suggestion;
+
+    try {
+        const response = await fetch('http://localhost:3000/api/suggestions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            suggestionOutput.textContent = data.suggestions.join(', ');
+        } else {
+            suggestionOutput.textContent = `Error: ${data.message || 'Try again'}`;
+        }
+    } catch (err) {
+        suggestionOutput.textContent = 'Backend not running. Run: npm start in backend folder.';
+    }
+
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'workout_suggested', { 'event_category': 'Gym Tracker', 'event_label': suggestion });
+        gtag('event', 'workout_suggested', {
+            'event_category': 'Gym Tracker',
+            'event_label': `${goal} (${level}, ${bodyPart}, BMI: ${bmi})`
+        });
     }
 });
 
@@ -693,6 +692,17 @@ streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1
 
 // Set random quote on page load
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+// Reset dropdowns and inputs to empty on page load
+document.getElementById('goal').value = '';
+document.getElementById('fitness-level').value = '';
+document.getElementById('body-part').value = '';
+document.getElementById('height').value = '';
+document.getElementById('height-unit').value = 'cm';
+document.getElementById('weight').value = '';
+document.getElementById('weight-unit').value = 'kg';
+bmiOutput.value = '';
+bmiCategory.textContent = '';
 
 // Initial render
 renderWorkouts();

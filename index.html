@@ -20,16 +20,14 @@
     <header class="hero">
         <h1>ForgeZone 💪</h1>
         <p>Log workouts, stay motivated, and build your legacy!</p>
-        <!-- Button scrolls to tracker section -->
         <button onclick="document.getElementById('tracker').scrollIntoView()">Start Tracking</button>
-        <!-- Button links to beta signup page -->
         <a href="beta.html" class="beta-button">Join Beta 🌟</a>
     </header>
 
     <!-- Tracker section: Goal form, workout form, and workout list -->
     <section id="tracker" class="tracker">
         <h2>Log Your Workout</h2>
-        <!-- Goal form: Set fitness goal, level, and body parts for AI suggestions -->
+        <!-- Goal form: Set fitness goal, level, body part, height, weight -->
         <form id="goal-form">
             <label for="goal">Fitness Goal:</label>
             <select id="goal" required>
@@ -45,16 +43,36 @@
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
             </select>
-            <fieldset>
-                <legend>Focus Areas (optional):</legend>
-                <label><input type="checkbox" name="body-part" value="abs"> Abs</label>
-                <label><input type="checkbox" name="body-part" value="chest"> Chest</label>
-                <label><input type="checkbox" name="body-part" value="back"> Back</label>
-                <label><input type="checkbox" name="body-part" value="legs"> Legs</label>
-                <label><input type="checkbox" name="body-part" value="arms"> Arms</label>
-                <label><input type="checkbox" name="body-part" value="shoulders"> Shoulders</label>
-                <label><input type="checkbox" name="body-part" value="glutes"> Glutes</label>
-            </fieldset>
+            <label for="body-part">Focus Area:</label>
+            <select id="body-part" name="body-part" required>
+                <option value="" disabled selected>Select a body part</option>
+                <option value="abs">Abs</option>
+                <option value="chest">Chest</option>
+                <option value="back">Back</option>
+                <option value="legs">Legs</option>
+                <option value="arms">Arms</option>
+                <option value="shoulders">Shoulders</option>
+                <option value="glutes">Glutes</option>
+            </select>
+            <label for="height">Height:</label>
+            <div class="input-group">
+                <input type="number" id="height" min="1" step="0.1" required placeholder="e.g., 170">
+                <select id="height-unit">
+                    <option value="cm">cm</option>
+                    <option value="inches">inches</option>
+                </select>
+            </div>
+            <label for="weight">Weight:</label>
+            <div class="input-group">
+                <input type="number" id="weight" min="1" step="0.1" required placeholder="e.g., 70">
+                <select id="weight-unit">
+                    <option value="kg">kg</option>
+                    <option value="lbs">lbs</option>
+                </select>
+            </div>
+            <label for="bmi">BMI:</label>
+            <input type="text" id="bmi" readonly placeholder="Calculated BMI">
+            <p id="bmi-category"></p>
             <button type="submit">Save Goal</button>
         </form>
         <!-- Suggest Workout button: Triggers AI workout suggestion -->
@@ -93,7 +111,6 @@
     <!-- Progress section: Displays completed workout counts, chart, streak, and goals -->
     <section id="progress" class="progress">
         <h2>Your Progress</h2>
-        <!-- Chart type and view controls -->
         <div class="chart-controls">
             <label for="chart-type">Chart Type:</label>
             <select id="chart-type">
@@ -119,7 +136,6 @@
                 <option value="cardio">Cardio</option>
             </select>
         </div>
-        <!-- Goal input -->
         <div class="goal-progress">
             <form id="goal-progress-form">
                 <label for="workout-goal">Workout Goal:</label>
@@ -135,14 +151,11 @@
                 <div id="goal-progress-fill" class="progress-fill"></div>
             </div>
         </div>
-        <!-- Streak display -->
         <div class="streak">
             <p id="streak-text">🔥 Streak: 0 days</p>
         </div>
-        <!-- Chart canvas -->
         <canvas id="progressChart"></canvas>
         <p id="progress-text">Today: 0 | Week: 0 | Month: 0</p>
-        <!-- Reset and export buttons -->
         <div class="progress-actions">
             <button id="reset-progress">Reset Progress</button>
             <button id="export-progress">Download Progress</button>
@@ -168,7 +181,6 @@
 
     <!-- Chart.js CDN for workout history visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-    <!-- Link to JavaScript for functionality -->
     <script src="script.js"></script>
 </body>
 </html>

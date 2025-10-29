@@ -69,14 +69,14 @@ body {
     margin-bottom: 20px; /* Space below headings */
 }
 
-/* Goal form: Grid layout for inputs and checkboxes */
+/* Goal form: Grid layout for inputs and dropdowns */
 #goal-form {
     display: grid;
     gap: 10px; /* Spacing between form elements */
     margin-bottom: 20px; /* Space below form */
 }
 
-/* Goal form dropdowns (goal, fitness level) */
+/* Goal form dropdowns (goal, fitness level, body part) */
 #goal-form select {
     padding: 10px;
     font-size: 1rem;
@@ -84,26 +84,34 @@ body {
     border-radius: 5px;
 }
 
-/* Body part checkboxes: Grid layout for clarity */
-#goal-form fieldset {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Responsive grid */
-    gap: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-/* Checkbox labels */
-#goal-form fieldset label {
+/* Input group for height and weight with unit dropdowns */
+.input-group {
     display: flex;
+    gap: 5px; /* Space between input and dropdown */
     align-items: center;
-    font-size: 0.9rem;
 }
 
-/* Checkbox styling */
-#goal-form fieldset input[type="checkbox"] {
-    margin-right: 5px;
+/* Height and weight inputs */
+#goal-form input[type="number"],
+#goal-form input[type="text"] {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px;
+    width: 100%; /* Full width for consistency */
+}
+
+/* Read-only BMI input */
+#goal-form input[readonly] {
+    background: #f9f9f9; /* Light gray to indicate read-only */
+    cursor: not-allowed;
+}
+
+/* BMI category text */
+#bmi-category {
+    font-size: 0.9rem;
+    color: #333;
+    margin-top: 5px;
 }
 
 /* Goal form submit button: Coral-themed */
@@ -423,94 +431,7 @@ footer {
     color: white;
 }
 
-/* Responsive: Adjustments for mobile screens */
-@media (max-width: 600px) {
-    .hero h1 {
-        font-size: 2rem; /* Smaller headline */
-    }
-    .tracker, .progress, .quote, .affiliate {
-        padding: 20px; /* Reduced padding */
-    }
-    .edit-button, .delete-button {
-        padding: 5px 8px; /* Smaller buttons */
-        font-size: 0.8rem;
-    }
-    /* Responsive checkboxes */
-    #goal-form fieldset {
-        grid-template-columns: 1fr; /* Stack on small screens */
-    }
-    .chart-controls {
-        flex-direction: column;
-    }
-    #goal-progress-form {
-        flex-direction: column;
-    }
-    .progress-actions {
-        flex-direction: column;
-    }
-}
-
-/* Beta Signup Section: Card-like container */
-.beta-signup {
-    padding: 40px;
-    max-width: 800px;
-    margin: 20px auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Heading and paragraph styling */
-.beta-signup h2 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.beta-signup p {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-/* HubSpot form styling */
-#hubspotForm {
-    margin-top: 10px;
-}
-
-/* Ensure HubSpot form inputs match app style */
-.hs-form-frame input[type="text"],
-.hs-form-frame input[type="email"],
-.hs-form-frame select {
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.hs-form-frame button[type="submit"] {
-    background: #ff6f61; /* Coral */
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
-}
-
-.hs-form-frame button[type="submit"]:hover {
-    background: #e55a50;
-    transform: scale(1.05);
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-    .beta-signup {
-        padding: 20px;
-    }
-}/* Beta button in hero section */
+/* Beta button in hero section */
 .beta-button {
     padding: 10px 20px;
     font-size: 1rem;
@@ -612,13 +533,34 @@ footer {
     transform: scale(1.05);
 }
 
-/* Responsive adjustments */
+/* Responsive: Adjustments for mobile screens */
 @media (max-width: 600px) {
-    .beta-page {
-        padding: 20px;
+    .hero h1 {
+        font-size: 2rem; /* Smaller headline */
     }
-    .beta-button, .back-button {
-        padding: 8px 16px;
-        font-size: 0.9rem;
+    .tracker, .progress, .quote, .affiliate, .beta-page {
+        padding: 20px; /* Reduced padding */
+    }
+    .edit-button, .delete-button {
+        padding: 5px 8px; /* Smaller buttons */
+        font-size: 0.8rem;
+    }
+    .chart-controls {
+        flex-direction: column;
+    }
+    #goal-progress-form {
+        flex-direction: column;
+    }
+    .progress-actions {
+        flex-direction: column;
+    }
+    /* Responsive input-group */
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .input-group input,
+    .input-group select {
+        width: 100%;
     }
 }
