@@ -46,7 +46,7 @@ const quotes = [
     "Don’t pray for lighter burdens. Pray for a stronger back.",
     "You can’t fake the fire in your eyes. The Forge knows.",
     "Every morning you rise is another chance to rewrite who you are.",
-    "Go beyond, Plus Ultra! 🌟"
+    "Go beyond, Plus Ultra!"
 ];
 
 // Load data from localStorage
@@ -174,7 +174,7 @@ function updateStreak() {
         lastWorkoutDate = today;
     }
 
-    streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
+    streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
     saveWorkouts();
     if (typeof gtag !== 'undefined') {
         gtag('event', 'streak_updated', { 'event_category': 'Gym Tracker', 'event_label': `Streak: ${currentStreak}` });
@@ -457,6 +457,7 @@ goalForm.addEventListener('submit', (e) => {
     const heightUnit = document.getElementById('height-unit').value;
     const weight = parseFloat(document.getElementById('weight').value);
     const weightUnit = document.getElementById('weight-unit').value;
+    const noEquipment = document.getElementById('no-equipment')?.checked || false; // ← NEW: Save checkbox
 
     // Validate inputs
     if (!goal || !level || !bodyPart) {
@@ -473,7 +474,9 @@ goalForm.addEventListener('submit', (e) => {
     }
 
     const bmi = parseFloat(bmiOutput.value) || 0;
-    localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi }));
+    localStorage.setItem('userGoal', JSON.stringify({ 
+        goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi, noEquipment // ← SAVE noEquipment
+    }));
     alert('Goal saved! Plus Ultra!');
     if (typeof gtag !== 'undefined') {
         gtag('event', 'goal_saved', {
@@ -491,13 +494,15 @@ weightUnitSelect.addEventListener('change', calculateBMI);
 
 // Handle Suggest Workout button — LIVE API CALL
 suggestButton.addEventListener('click', async () => {
-    const goal = document.getElementById('goal').value;
-    const level = document.getElementById('fitness-level').value;
-    const bodyPart = document.getElementById('body-part').value;
-    const bmi = parseFloat(bmiOutput.value) || 0;
+    const saved = JSON.parse(localStorage.getItem('userGoal') || '{}');
+    const goal = saved.goal || document.getElementById('goal').value;
+    const level = saved.level || document.getElementById('fitness-level').value;
+    const bodyPart = saved.bodyPart || document.getElementById('body-part').value;
+    const bmi = saved.bmi || parseFloat(bmiOutput.value) || 0;
+    const noEquipment = saved.noEquipment || false; // ← READ FROM STORAGE
 
     if (!goal || !level || !bodyPart) {
-        suggestionOutput.textContent = 'Please select a goal, fitness level, and body part first.';
+        suggestionOutput.textContent = 'Please save your goal first.';
         return;
     }
 
@@ -505,7 +510,7 @@ suggestButton.addEventListener('click', async () => {
         const response = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/suggestions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi })
+            body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi, noEquipment }) // ← SEND
         });
 
         const data = await response.json();
@@ -652,7 +657,7 @@ resetProgressButton.addEventListener('click', () => {
         renderWorkouts();
         updateChart();
         updateGoalProgress();
-        streakText.textContent = '🔥 Streak: 0 days';
+        streakText.textContent = 'Streak: 0 days';
         if (typeof gtag !== 'undefined') {
             gtag('event', 'progress_reset', { 'event_category': 'Gym Tracker', 'event_label': 'Reset Progress' });
         }
@@ -689,7 +694,7 @@ if (workoutGoal.value) {
     document.getElementById('workout-goal').value = workoutGoal.value;
     document.getElementById('goal-period').value = workoutGoal.period;
 }
-streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
+streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
 
 // Set random quote on page load
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
