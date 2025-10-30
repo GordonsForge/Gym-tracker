@@ -18,10 +18,10 @@
 <body>
     <!-- Hero section: Eye-catching header with gym image and call-to-action -->
     <header class="hero">
-        <h1>ForgeZone 💪</h1>
+        <h1>ForgeZone</h1>
         <p>Log workouts, stay motivated, and build your legacy!</p>
         <button onclick="document.getElementById('tracker').scrollIntoView()">Start Tracking</button>
-        <a href="beta.html" class="beta-button">Join Beta 🌟</a>
+        <a href="beta.html" class="beta-button">Join Beta</a>
     </header>
 
     <!-- Tracker section: Goal form, workout form, and workout list -->
@@ -73,6 +73,15 @@
             <label for="bmi">BMI:</label>
             <input type="text" id="bmi" readonly placeholder="Calculated BMI">
             <p id="bmi-category"></p>
+
+            <!-- ADDED: No Equipment Checkbox -->
+            <div style="margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; text-align: center;">
+                <label style="font-weight: bold; cursor: pointer;">
+                    <input type="checkbox" id="no-equipment" style="transform: scale(1.2); margin-right: 8px;">
+                    No equipment (bodyweight only)
+                </label>
+            </div>
+
             <button type="submit">Save Goal</button>
         </form>
         <!-- Suggest Workout button: Triggers AI workout suggestion -->
@@ -152,7 +161,7 @@
             </div>
         </div>
         <div class="streak">
-            <p id="streak-text">🔥 Streak: 0 days</p>
+            <p id="streak-text">Streak: 0 days</p>
         </div>
         <canvas id="progressChart"></canvas>
         <p id="progress-text">Today: 0 | Week: 0 | Month: 0</p>
@@ -176,7 +185,7 @@
 
     <!-- Footer: Credits and branding with beta link -->
     <footer>
-        <p>Built by @Theanimedon1 with HTML & CSS | 2025 | <a href="beta.html" class="beta-link">Join Beta 🌟</a></p>
+        <p>Built by @Theanimedon1 with HTML & CSS | 2025 | <a href="beta.html" class="beta-link">Join Beta</a></p>
     </footer>
 
     <!-- Chart.js CDN for workout history visualization -->
