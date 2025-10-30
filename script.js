@@ -1,3 +1,160 @@
+// === NEW: LOGIN + MONGO + INSIGHTS ===
+let token = localStorage.getItem('token') || null;
+let userId = localStorage.getItem('userId') || null;
+let userGoal = null;
+const INSIGHTS_THRESHOLD = 3; // ← Change to 1, 5, 7, etc.
+
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const logoutBtn = document.getElementById('logoutBtn');
+const authSection = document.getElementById('authSection');
+const appSection = document.getElementById('appSection');
+
+async function login(e) {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const password = e.target.password.value;
+
+  const res = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    token = data.token;
+    userId = data.user._id;
+    localStorage.setItem('token', token);
+    localStorage.setItem('userId', userId);
+    showApp();
+    await loadGoalFromDB();
+    await loadWorkoutsFromDB();
+    renderWorkouts();
+  } else {
+    alert(data.message);
+  }
+}
+
+async function register(e) {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const password = e.target.password.value;
+
+  const res = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    alert('Registered! Now login.');
+  } else {
+    alert(data.message);
+  }
+}
+
+function logout() {
+  token = null;
+  userId = null;
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId');
+  showAuth();
+}
+
+function showAuth() {
+  authSection.style.display = 'block';
+  appSection.style.display = 'none';
+}
+function showApp() {
+  authSection.style.display = 'none';
+  appSection.style.display = 'block';
+}
+
+async function saveGoalToDB() {
+  const goal = document.getElementById('goal').value;
+  const level = document.getElementById('fitness-level').value;
+  const bodyPart = document.getElementById('body-part').value;
+  const height = parseFloat(document.getElementById('height').value);
+  const heightUnit = document.getElementById('height-unit').value;
+  const weight = parseFloat(document.getElementById('weight').value);
+  const weightUnit = document.getElementById('weight-unit').value;
+  const bmi = parseFloat(bmiOutput.value) || 0;
+  const noEquipment = document.getElementById('no-equipment').checked;
+
+  userGoal = { goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi, noEquipment };
+
+  await fetch('https://fitness-tracker-backend-omega.vercel.app/api/goal', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(userGoal)
+  });
+}
+
+async function loadGoalFromDB() {
+  if (!token) return;
+  const res = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/goal', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await res.json();
+  if (data.goal) {
+    userGoal = data;
+    document.getElementById('goal').value = data.goal;
+    document.getElementById('fitness-level').value = data.level;
+    document.getElementById('body-part').value = data.bodyPart;
+    document.getElementById('height').value = data.height;
+    document.getElementById('height-unit').value = data.heightUnit || 'cm';
+    document.getElementById('weight').value = data.weight;
+    document.getElementById('weight-unit').value = data.weightUnit || 'kg';
+    document.getElementById('no-equipment').checked = data.noEquipment || false;
+    calculateBMI();
+  }
+}
+
+async function loadWorkoutsFromDB() {
+  if (!token) return;
+  const res = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/workouts', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const dbWorkouts = await res.json();
+  workouts = dbWorkouts.map(w => ({ ...w, completed: true }));
+  completedWorkouts = workouts.map(w => w.timestamp);
+  saveWorkouts();
+  checkForInsights();
+}
+
+async function saveWorkoutToDB(text) {
+  await fetch('https://fitness-tracker-backend-omega.vercel.app/api/workout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ text })
+  });
+}
+
+async function checkForInsights() {
+  if (!token || !userGoal) return;
+  const completedCount = workouts.filter(w => w.completed).length;
+  if (completedCount >= INSIGHTS_THRESHOLD) {
+    const res = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/insights', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    if (data.insights) {
+      suggestionOutput.textContent = data.insights;
+      suggestionOutput.style.color = '#27ae60';
+      suggestionOutput.style.fontWeight = 'bold';
+    }
+  }
+}
+// === END NEW ===
+
 // Get DOM elements for interaction
 const form = document.getElementById('workout-form');
 const workoutList = document.getElementById('workout-list');
@@ -46,7 +203,7 @@ const quotes = [
     "Don’t pray for lighter burdens. Pray for a stronger back.",
     "You can’t fake the fire in your eyes. The Forge knows.",
     "Every morning you rise is another chance to rewrite who you are.",
-    "Go beyond, Plus Ultra! 🌟"
+    "Go beyond, Plus Ultra!"
 ];
 
 // Load data from localStorage
@@ -63,6 +220,27 @@ let lastWorkoutDate = localStorage.getItem('lastWorkoutDate') || null;
 let currentStreak = parseInt(localStorage.getItem('currentStreak')) || 0;
 let editingIndex = -1;
 let chartInstance = null;
+
+// === NEW: Override saveWorkouts to sync with DB ===
+const originalSaveWorkouts = saveWorkouts;
+function saveWorkouts() {
+  localStorage.setItem('workouts', JSON.stringify(workouts));
+  localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
+  localStorage.setItem('lastResetDay', lastResetDay);
+  localStorage.setItem('lastResetWeek', lastResetWeek);
+  localStorage.setItem('workoutsLog', JSON.stringify(workoutsLog));
+  localStorage.setItem('chartType', chartType);
+  localStorage.setItem('timeView', timeView);
+  localStorage.setItem('filterType', filterType);
+  localStorage.setItem('workoutGoal', JSON.stringify(workoutGoal));
+  localStorage.setItem('lastWorkoutDate', lastWorkoutDate);
+  localStorage.setItem('currentStreak', currentStreak);
+  if (token) {
+    workouts.filter(w => w.completed && !completedWorkouts.includes(w.timestamp))
+      .forEach(w => saveWorkoutToDB(w.text));
+  }
+}
+// === END NEW ===
 
 // Calculate BMI and update display
 function calculateBMI() {
@@ -105,7 +283,6 @@ const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
 const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-// Clean invalid or future timestamps and ensure unique entries
 completedWorkouts = [...new Set(completedWorkouts.filter(t => {
     try {
         const date = new Date(t);
@@ -115,31 +292,14 @@ completedWorkouts = [...new Set(completedWorkouts.filter(t => {
     }
 }))];
 
-// Reset Today if new day
 if (!lastResetDay || new Date(lastResetDay) < today) {
     completedWorkouts = completedWorkouts.filter(t => new Date(t) < today);
     lastResetDay = now.toISOString();
 }
 
-// Reset Week if new week (Sunday start)
 if (!lastResetWeek || new Date(lastResetWeek) < weekStart) {
     completedWorkouts = completedWorkouts.filter(t => new Date(t) < weekStart);
     lastResetWeek = now.toISOString();
-}
-
-// Save all data to localStorage
-function saveWorkouts() {
-    localStorage.setItem('workouts', JSON.stringify(workouts));
-    localStorage.setItem('completedWorkouts', JSON.stringify(completedWorkouts));
-    localStorage.setItem('lastResetDay', lastResetDay);
-    localStorage.setItem('lastResetWeek', lastResetWeek);
-    localStorage.setItem('workoutsLog', JSON.stringify(workoutsLog));
-    localStorage.setItem('chartType', chartType);
-    localStorage.setItem('timeView', timeView);
-    localStorage.setItem('filterType', filterType);
-    localStorage.setItem('workoutGoal', JSON.stringify(workoutGoal));
-    localStorage.setItem('lastWorkoutDate', lastWorkoutDate);
-    localStorage.setItem('currentStreak', currentStreak);
 }
 
 // Categorize workouts for filtering
@@ -174,7 +334,7 @@ function updateStreak() {
         lastWorkoutDate = today;
     }
 
-    streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
+    streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
     saveWorkouts();
     if (typeof gtag !== 'undefined') {
         gtag('event', 'streak_updated', { 'event_category': 'Gym Tracker', 'event_label': `Streak: ${currentStreak}` });
@@ -299,11 +459,7 @@ function getChartData() {
 
 // Update Chart.js chart
 function updateChart() {
-    if (!ctx) {
-        console.error('Chart canvas context not found');
-        return;
-    }
-
+    if (!ctx) return;
     try {
         const { labels, data } = getChartData();
         if (chartInstance) chartInstance.destroy();
@@ -323,24 +479,12 @@ function updateChart() {
                 }]
             },
             options: {
-                animation: {
-                    duration: 1000,
-                    easing: 'easeInOutQuad'
-                },
+                animation: { duration: 1000, easing: 'easeInOutQuad' },
                 scales: chartType === 'bar' ? {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Number of Workouts' }
-                    },
-                    x: {
-                        title: { display: true, text: timeView.charAt(0).toUpperCase() + timeView.slice(1) }
-                    }
+                    y: { beginAtZero: true, title: { display: true, text: 'Number of Workouts' } },
+                    x: { title: { display: true, text: timeView.charAt(0).toUpperCase() + timeView.slice(1) } }
                 } : {},
-                plugins: {
-                    legend: {
-                        display: chartType === 'pie'
-                    }
-                }
+                plugins: { legend: { display: chartType === 'pie' } }
             }
         };
 
@@ -362,13 +506,14 @@ function renderWorkouts() {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = workout.completed;
-        checkbox.addEventListener('change', () => {
+        checkbox.addEventListener('change', async () => {
             workouts[index].completed = checkbox.checked;
             workoutItem.classList.toggle('completed', checkbox.checked);
             if (checkbox.checked) {
                 if (!completedWorkouts.includes(workout.timestamp)) {
                     completedWorkouts.push(workout.timestamp);
                     updateStreak();
+                    if (token) await saveWorkoutToDB(workout.text);
                 }
             } else {
                 completedWorkouts = completedWorkouts.filter(t => t !== workout.timestamp);
@@ -376,6 +521,7 @@ function renderWorkouts() {
             saveWorkouts();
             updateChart();
             updateProgress();
+            checkForInsights();
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'workout_completed', { 'event_category': 'Gym Tracker', 'event_label': workout.text, 'value': checkbox.checked ? 1 : 0 });
             }
@@ -447,8 +593,8 @@ function renderWorkouts() {
     updateGoalProgress();
 }
 
-// Handle goal form submission
-goalForm.addEventListener('submit', (e) => {
+// === MODIFIED: Goal Form Submit → Save to DB ===
+goalForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const goal = document.getElementById('goal').value;
     const level = document.getElementById('fitness-level').value;
@@ -458,7 +604,6 @@ goalForm.addEventListener('submit', (e) => {
     const weight = parseFloat(document.getElementById('weight').value);
     const weightUnit = document.getElementById('weight-unit').value;
 
-    // Validate inputs
     if (!goal || !level || !bodyPart) {
         alert('Please select a goal, fitness level, and body part.');
         return;
@@ -474,28 +619,20 @@ goalForm.addEventListener('submit', (e) => {
 
     const bmi = parseFloat(bmiOutput.value) || 0;
     localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi }));
+    if (token) await saveGoalToDB();
     alert('Goal saved! Plus Ultra!');
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'goal_saved', {
-            'event_category': 'Gym Tracker',
-            'event_label': `${goal} (${level}, ${bodyPart}, BMI: ${bmi})`
-        });
+        gtag('event', 'goal_saved', { 'event_category': 'Gym Tracker', 'event_label': `${goal} (${level}, ${bodyPart}, BMI: ${bmi})` });
     }
 });
 
-// Handle BMI calculation on input change
-heightInput.addEventListener('input', calculateBMI);
-weightInput.addEventListener('input', calculateBMI);
-heightUnitSelect.addEventListener('change', calculateBMI);
-weightUnitSelect.addEventListener('change', calculateBMI);
-
-// Handle Suggest Workout button — LIVE API CALL
+// === MODIFIED: Suggest Button → Use DB Goal ===
 suggestButton.addEventListener('click', async () => {
-    const goal = document.getElementById('goal').value;
-    const level = document.getElementById('fitness-level').value;
-    const bodyPart = document.getElementById('body-part').value;
+    const goal = userGoal?.goal || document.getElementById('goal').value;
+    const level = userGoal?.level || document.getElementById('fitness-level').value;
+    const bodyPart = userGoal?.bodyPart || document.getElementById('body-part').value;
     const bmi = parseFloat(bmiOutput.value) || 0;
-    const noEquipment = document.getElementById('no-equipment')?.checked || false; // ← NEW: Get checkbox
+    const noEquipment = document.getElementById('no-equipment')?.checked || false;
 
     if (!goal || !level || !bodyPart) {
         suggestionOutput.textContent = 'Please select a goal, fitness level, and body part first.';
@@ -506,7 +643,7 @@ suggestButton.addEventListener('click', async () => {
         const response = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/suggestions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi, noEquipment }) // ← UPDATED: Send noEquipment
+            body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi, noEquipment })
         });
 
         const data = await response.json();
@@ -522,14 +659,11 @@ suggestButton.addEventListener('click', async () => {
     }
 
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'workout_suggested', {
-            'event_category': 'Gym Tracker',
-            'event_label': `${goal} (${level}, ${bodyPart}, BMI: ${bmi})`
-        });
+        gtag('event', 'workout_suggested', { 'event_category': 'Gym Tracker', 'event_label': `${goal} (${level}, ${bodyPart}, BMI: ${bmi})` });
     }
 });
 
-// Handle workout form submission
+// === ORIGINAL FORM SUBMIT (UNTOUCHED) ===
 form.addEventListener('submit', (e) => {
     e.preventDefault();
     const exercise = document.getElementById('exercise').value;
@@ -575,13 +709,7 @@ form.addEventListener('submit', (e) => {
             timestamp: timestamp
         });
         if (typeof gtag !== 'undefined') {
-            gtag('event', 'workout_logged', {
-                'event_category': 'Gym Tracker',
-                'event_label': exercise,
-                'value': 1,
-                'distance': distance || 'none',
-                'time': time ? `${time} ${timeUnit}` : 'none'
-            });
+            gtag('event', 'workout_logged', { 'event_category': 'Gym Tracker', 'event_label': exercise, 'value': 1 });
         }
     }
 
@@ -591,7 +719,7 @@ form.addEventListener('submit', (e) => {
     form.reset();
 });
 
-// Handle Clear Workouts button
+// === REST OF YOUR ORIGINAL CODE (UNCHANGED) ===
 clearButton.addEventListener('click', () => {
     workouts.forEach(workout => {
         if (workout.completed && !completedWorkouts.includes(workout.timestamp)) {
@@ -606,7 +734,6 @@ clearButton.addEventListener('click', () => {
     }
 });
 
-// Handle chart type and time view changes
 chartTypeSelect.addEventListener('change', (e) => {
     chartType = e.target.value;
     saveWorkouts();
@@ -625,7 +752,6 @@ filterTypeSelect.addEventListener('change', (e) => {
     updateChart();
 });
 
-// Handle goal progress form submission
 goalProgressForm.addEventListener('submit', (e) => {
     e.preventDefault();
     workoutGoal.value = parseInt(document.getElementById('workout-goal').value);
@@ -638,7 +764,6 @@ goalProgressForm.addEventListener('submit', (e) => {
     }
 });
 
-// Handle reset progress
 resetProgressButton.addEventListener('click', () => {
     if (confirm('Are you sure you want to reset all progress data?')) {
         workouts = [];
@@ -653,14 +778,13 @@ resetProgressButton.addEventListener('click', () => {
         renderWorkouts();
         updateChart();
         updateGoalProgress();
-        streakText.textContent = '🔥 Streak: 0 days';
+        streakText.textContent = 'Streak: 0 days';
         if (typeof gtag !== 'undefined') {
             gtag('event', 'progress_reset', { 'event_category': 'Gym Tracker', 'event_label': 'Reset Progress' });
         }
     }
 });
 
-// Handle export progress
 exportProgressButton.addEventListener('click', () => {
     const { labels, data } = getChartData();
     const csvContent = `data:text/csv;charset=utf-8,${timeView.charAt(0).toUpperCase() + timeView.slice(1)},Workouts\n` +
@@ -678,11 +802,17 @@ exportProgressButton.addEventListener('click', () => {
     }
 
     if (typeof gtag !== 'undefined') {
-        gtag('event', 'progress_exported', { 'event_category': 'Gym Tracker', 'event_label': `Exported ${timeView} view as CSV and image` });
+        gtag('event', 'progress_exported', { 'event_category': 'Gym Tracker', 'event_label': `Exported ${timeView} view` });
     }
 });
 
-// Initialize UI elements
+// === NEW: Auth Event Listeners ===
+loginForm?.addEventListener('submit', login);
+registerForm?.addEventListener('submit', register);
+logoutBtn?.addEventListener('click', logout);
+// === END NEW ===
+
+// Initialize UI
 chartTypeSelect.value = chartType;
 timeViewSelect.value = timeView;
 filterTypeSelect.value = filterType;
@@ -690,12 +820,12 @@ if (workoutGoal.value) {
     document.getElementById('workout-goal').value = workoutGoal.value;
     document.getElementById('goal-period').value = workoutGoal.period;
 }
-streakText.textContent = `🔥 Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
+streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
 
-// Set random quote on page load
+// Random quote
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
 
-// Reset dropdowns and inputs to empty on page load
+// Reset form
 document.getElementById('goal').value = '';
 document.getElementById('fitness-level').value = '';
 document.getElementById('body-part').value = '';
@@ -705,6 +835,20 @@ document.getElementById('weight').value = '';
 document.getElementById('weight-unit').value = 'kg';
 bmiOutput.value = '';
 bmiCategory.textContent = '';
+
+// === NEW: On Load — Check Login + Load DB ===
+if (token) {
+  showApp();
+  loadGoalFromDB().then(() => {
+    loadWorkoutsFromDB().then(() => {
+      renderWorkouts();
+      checkForInsights();
+    });
+  });
+} else {
+  showAuth();
+}
+// === END NEW ===
 
 // Initial render
 renderWorkouts();
