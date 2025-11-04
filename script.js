@@ -177,7 +177,8 @@ const weightInput = document.getElementById('weight');
 const weightUnitSelect = document.getElementById('weight-unit');
 const bmiInput = document.getElementById('bmi');  // FIXED: bmiOutput → bmiInput
 const bmiCategory = document.getElementById('bmi-category');
-
+heightInput.addEventListener('input', calculateBMI);
+weightInput.addEventListener('input', calculateBMI);
 // Quotes
 const quotes = [
   "The only bad workout is the one you didn’t do.",
@@ -635,7 +636,10 @@ suggestButton.addEventListener('click', async () => {
   try {
     const response = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/suggestions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+       },
       body: JSON.stringify({ goal, fitnessLevel: level, bodyPart, bmi, noEquipment })
     });
 
