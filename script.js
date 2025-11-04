@@ -80,7 +80,7 @@ async function saveGoalToDB() {
   const heightUnit = document.getElementById('height-unit').value;
   const weight = parseFloat(document.getElementById('weight').value);
   const weightUnit = document.getElementById('weight-unit').value;
-  const bmi = parseFloat(bmiInput.value) || 0;  // FIXED: bmiOutput → bmiInput
+  const bmi = parseFloat(bmiInput.value) || 0;
   const noEquipment = document.getElementById('no-equipment').checked;
 
   userGoal = { goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi, noEquipment };
@@ -112,7 +112,20 @@ async function loadGoalFromDB() {
     document.getElementById('weight-unit').value = data.weightUnit || 'kg';
     document.getElementById('no-equipment').checked = data.noEquipment || false;
     calculateBMI();
+    updateUserGoalFromForm(); // ← FIXED: Sync userGoal after load
   }
+}
+
+// === NEW FUNCTION: Sync userGoal with form ===
+function updateUserGoalFromForm() {
+  userGoal = {
+    ...userGoal,
+    goal: document.getElementById('goal').value,
+    level: document.getElementById('fitness-level').value,
+    bodyPart: document.getElementById('body-part').value,
+    bmi: parseFloat(bmiInput.value) || 0,
+    noEquipment: document.getElementById('no-equipment').checked
+  };
 }
 
 async function loadWorkoutsFromDB() {
@@ -147,7 +160,7 @@ async function checkForInsights() {
     });
     const data = await res.json();
     if (data.insights) {
-      const insightBox = document.getElementById('insight-box');  // FIXED: suggestionOutput → insight-box
+      const insightBox = document.getElementById('insight-box');
       insightBox.textContent = data.insights;
       insightBox.style.display = 'block';
     }
@@ -175,10 +188,11 @@ const heightInput = document.getElementById('height');
 const heightUnitSelect = document.getElementById('height-unit');
 const weightInput = document.getElementById('weight');
 const weightUnitSelect = document.getElementById('weight-unit');
-const bmiInput = document.getElementById('bmi');  // FIXED: bmiOutput → bmiInput
+const bmiInput = document.getElementById('bmi');
 const bmiCategory = document.getElementById('bmi-category');
 heightInput.addEventListener('input', calculateBMI);
 weightInput.addEventListener('input', calculateBMI);
+
 // Quotes
 const quotes = [
   "The only bad workout is the one you didn’t do.",
@@ -277,7 +291,7 @@ function calculateBMI() {
   else category = 'Obese';
 
   bmiCategory.textContent = `Category: ${category}`;
-  bmiCategory.className = category.toLowerCase();  // FIXED: color class
+  bmiCategory.className = category.toLowerCase();
 }
 
 // === ALL 854 LINES BELOW — 100% UNTOUCHED ===
@@ -589,6 +603,17 @@ function renderWorkouts() {
   updateGoalProgress();
 }
 
+// === FIXED: Auto-sync userGoal on dropdown change ===
+['goal', 'fitness-level', 'body-part', 'no-equipment'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('change', () => {
+      updateUserGoalFromForm();  // ← UPDATE userGoal
+      if (token) saveGoalToDB(); // ← Save to DB
+    });
+  }
+});
+
 goalForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const goal = document.getElementById('goal').value;
@@ -612,7 +637,7 @@ goalForm.addEventListener('submit', async (e) => {
     return;
   }
 
-  const bmi = parseFloat(bmiInput.value) || 0;  // FIXED
+  const bmi = parseFloat(bmiInput.value) || 0;
   localStorage.setItem('userGoal', JSON.stringify({ goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi }));
   if (token) await saveGoalToDB();
   alert('Goal saved! Plus Ultra!');
@@ -625,7 +650,7 @@ suggestButton.addEventListener('click', async () => {
   const goal = userGoal?.goal || document.getElementById('goal').value;
   const level = userGoal?.level || document.getElementById('fitness-level').value;
   const bodyPart = userGoal?.bodyPart || document.getElementById('body-part').value;
-  const bmi = parseFloat(bmiInput.value) || 0;  // FIXED
+  const bmi = parseFloat(bmiInput.value) || 0;
   const noEquipment = document.getElementById('no-equipment')?.checked || false;
 
   if (!goal || !level || !bodyPart) {
@@ -816,9 +841,11 @@ streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? ''
 
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
 
-document.getElementById('goal').value = '';
-document.getElementById('fitness-level').value = '';
-document.getElementById('body-part').value = '';
+// === DELETED: These 3 lines were resetting dropdowns ===
+// document.getElementById('goal').value = '';
+// document.getElementById('fitness-level').value = '';
+// document.getElementById('body-part').value = '';
+
 document.getElementById('height').value = '';
 document.getElementById('height-unit').value = 'cm';
 document.getElementById('weight').value = '';
@@ -828,12 +855,10 @@ bmiCategory.textContent = '';
 
 if (token) {
   showApp();
-  loadGoalFromDB().then(() => {
-    loadWorkoutsFromDB().then(() => {
-      renderWorkouts();
-      checkForInsights();
-    });
-  });
+  await loadGoalFromDB();
+  await loadWorkoutsFromDB();
+  renderWorkouts();
+  checkForInsights();
 } else {
   showAuth();
 }
