@@ -2,53 +2,53 @@
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* Ensures padding and borders are included in element sizes */
-    font-family: 'Roboto', sans-serif; /* Use Roboto font from Google Fonts */
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
 }
 
 /* Body: Light gray background for a clean look */
 body {
     background: #f4f4f4;
-    color: #333; /* Dark text for readability */
+    color: #333;
 }
 
 /* Hero Section: Header with gym background image */
 .hero {
-    background: url('gym.jpg') no-repeat center/cover; /* Gym image, centered and scaled */
-    height: 50vh; /* Half viewport height */
+    background: url('gym.jpg') no-repeat center/cover;
+    height: 50vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    color: white; /* White text for contrast */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for readability on image */
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
 /* Hero headline */
 .hero h1 {
-    font-size: 3rem; /* Large, bold title */
+    font-size: 3rem;
 }
 
 /* Hero paragraph */
 .hero p {
     font-size: 1.2rem;
-    margin: 10px 0; /* Spacing above and below */
+    margin: 10px 0;
 }
 
 /* Hero button: Coral-themed call-to-action */
 .hero button {
     padding: 10px 20px;
     font-size: 1rem;
-    background: #ff6f61; /* Coral color */
+    background: #ff6f61;
     border: none;
     color: white;
     cursor: pointer;
     border-radius: 5px;
-    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out; /* Smooth hover effects */
+    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Hero button hover: Darker coral and slight scale */
+/* Hero button hover */
 .hero button:hover {
     background: #e55a50;
     transform: scale(1.05);
@@ -56,38 +56,38 @@ body {
 
 /* Tracker, Progress, Quote, Affiliate: Card-like containers */
 .tracker, .progress, .quote, .affiliate {
-    padding: 40px; /* Spacious padding */
-    max-width: 800px; /* Constrain width for readability */
-    margin: 20px auto; /* Center with spacing */
-    background: white; /* White background for card effect */
+    padding: 40px;
+    max-width: 800px;
+    margin: 20px auto;
+    background: white;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Section headings */
 .tracker h2, .progress h2, .quote h2, .affiliate h3 {
-    margin-bottom: 20px; /* Space below headings */
+    margin-bottom: 20px;
 }
 
 /* Goal form: Grid layout for inputs and dropdowns */
 #goal-form {
     display: grid;
-    gap: 10px; /* Spacing between form elements */
-    margin-bottom: 20px; /* Space below form */
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 /* Goal form dropdowns (goal, fitness level, body part) */
 #goal-form select {
     padding: 10px;
     font-size: 1rem;
-    border: 1px solid #ddd; /* Light gray border */
+    border: 1px solid #ddd;
     border-radius: 5px;
 }
 
 /* Input group for height and weight with unit dropdowns */
 .input-group {
     display: flex;
-    gap: 5px; /* Space between input and dropdown */
+    gap: 5px;
     align-items: center;
 }
 
@@ -96,27 +96,37 @@ body {
 #goal-form input[type="text"] {
     padding: 10px;
     font-size: 1rem;
-    border: 1px solid #ddd; /* Light gray border */
+    border: 1px solid #ddd;
     border-radius: 5px;
-    width: 100%; /* Full width for consistency */
+    width: 100%;
 }
 
 /* Read-only BMI input */
 #goal-form input[readonly] {
-    background: #f9f9f9; /* Light gray to indicate read-only */
+    background: #f9f9f9;
     cursor: not-allowed;
 }
 
-/* BMI category text */
+/* BMI category text — COLOR CODED */
 #bmi-category {
     font-size: 0.9rem;
-    color: #333;
     margin-top: 5px;
+    font-weight: bold;
+}
+#bmi-category.underweight { color: #3498db; } /* Blue */
+#bmi-category.normal     { color: #27ae60; } /* Green */
+#bmi-category.overweight { color: #f39c12; } /* Orange */
+#bmi-category.obese      { color: #e74c3c; } /* Red */
+
+/* No Equipment Checkbox Styling */
+#no-equipment {
+    transform: scale(1.3);
+    margin-right: 8px;
 }
 
 /* Goal form submit button: Coral-themed */
 #goal-form button[type="submit"] {
-    background: #ff6f61; /* Coral */
+    background: #ff6f61;
     color: white;
     border: none;
     cursor: pointer;
@@ -126,62 +136,54 @@ body {
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Goal form submit button hover */
 #goal-form button[type="submit"]:hover {
     background: #e55a50;
     transform: scale(1.05);
 }
 
-/* Suggest Workout button: Coral-themed */
+/* Suggest Workout button */
 #suggest-workout {
     background: #ff6f61;
     color: white;
-    padding: 10px;
+    padding: 10px 16px;
     font-size: 1rem;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-bottom: 10px; /* Space below buttons */
-    margin-right: 10px; /* Space between buttons */
+    margin: 15px 0;
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Suggest Workout button hover */
 #suggest-workout:hover {
     background: #e55a50;
     transform: scale(1.05);
 }
 
-/* Suggestion output: Styled like workout items */
+/* Suggestion output — INSIGHT-STYLE BOX */
 #suggestion-output {
-    padding: 10px;
-    background: #f9f9f9; /* Light gray background */
-    border-radius: 5px;
-    margin-top: 10px; /* Space above output */
-    margin-bottom: 10px; /* Space below output */
+    padding: 12px;
+    background: #f0f8f0;
+    border-left: 5px solid #27ae60;
+    border-radius: 6px;
+    margin: 15px 0;
+    font-weight: bold;
+    color: #27ae60;
+    min-height: 20px;
 }
 
-/* Progress chart: Constrain size */
-#progressChart {
-    max-height: 300px;
-    width: 100%;
-}
-
-/* Tracker form: Grid layout for inputs */
+/* Tracker form: Grid layout */
 .tracker form {
     display: grid;
-    gap: 10px; /* Spacing between form elements */
+    gap: 10px;
 }
 
-/* Form inputs (exercise, sets, reps, weight, distance, time) */
 .tracker input {
     padding: 10px;
     font-size: 1rem;
-    border: 1px solid #ddd; /* Light gray border */
+    border: 1px solid #ddd;
     border-radius: 5px;
 }
 
-/* Time input container */
 .time-input {
     display: flex;
     gap: 5px;
@@ -195,9 +197,8 @@ body {
     border-radius: 5px;
 }
 
-/* Form submit button: Coral-themed */
 .tracker button[type="submit"] {
-    background: #ff6f61; /* Coral */
+    background: #ff6f61;
     color: white;
     border: none;
     cursor: pointer;
@@ -207,13 +208,11 @@ body {
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Submit button hover: Darker coral and scale */
 .tracker button[type="submit"]:hover {
     background: #e55a50;
     transform: scale(1.05);
 }
 
-/* Clear Workouts button: Coral-themed, below form */
 #clear-workouts {
     background: #ff6f61;
     color: white;
@@ -222,80 +221,106 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-top: 10px; /* Space above button */
+    margin-top: 10px;
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Clear Workouts button hover */
 #clear-workouts:hover {
     background: #e55a50;
     transform: scale(1.05);
 }
 
-/* Workout list container */
+/* Workout list */
 #workout-list {
-    margin-top: 20px; /* Space above workout list */
+    margin-top: 20px;
 }
 
-/* Workout items: Flexbox for checkbox, text, and buttons */
 .workout-item {
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between elements */
+    gap: 10px;
     padding: 10px;
-    border-bottom: 1px solid #ddd; /* Separator line */
-    background: #f9f9f9; /* Light gray background */
+    border-bottom: 1px solid #ddd;
+    background: #f9f9f9;
     border-radius: 5px;
+    margin-bottom: 8px;
 }
 
-/* Completed workouts: Deku-green background and strikethrough */
 .workout-item.completed {
-    background: #d0ffd0; /* MHA-inspired Deku green */
+    background: #d0ffd0;
     text-decoration: line-through;
+    opacity: 0.9;
 }
 
-/* Checkbox styling */
 .workout-item input[type="checkbox"] {
     width: 20px;
     height: 20px;
 }
 
-/* Edit and Delete buttons */
-.edit-button, .delete-button {
+/* Edit/Delete buttons */
+.workout-item button {
     padding: 5px 10px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border: none;
-    border-radius: 5px;
+    border-rounded: 5px;
     cursor: pointer;
-    margin-left: 10px; /* Space from text */
+    margin-left: 5px;
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
-/* Edit button: Green */
-.edit-button {
+.workout-item button:first-of-type { /* Edit */
     background: #4caf50;
     color: white;
 }
 
-/* Edit button hover */
-.edit-button:hover {
-    background: #45a049;
-    transform: scale(1.05);
-}
-
-/* Delete button: Red */
-.delete-button {
-    background: #ff4c4c;
+.workout-item button:last-of-type { /* Delete */
+    background: #e74c3c;
     color: white;
 }
 
-/* Delete button hover */
-.delete-button:hover {
-    background: #cc3d3d;
+.workout-item button:hover {
     transform: scale(1.05);
 }
 
-/* Chart controls: Flexbox for dropdowns */
+/* === INSIGHT BOX (WEEKLY AI INSIGHT) === */
+#insight-box {
+    margin: 15px 0;
+    padding: 15px;
+    background: #fff9e6;
+    border-left: 5px solid #f39c12;
+    border-radius: 6px;
+    font-weight: bold;
+    color: #d35400;
+    display: none;
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* === LEADERBOARD === */
+#leaderboard {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8f0;
+    border-left: 5px solid #27ae60;
+    border-radius: 6px;
+    display: none;
+}
+
+#leaderboard h3 {
+    margin-bottom: 10px;
+    color: #27ae60;
+}
+
+#leaderboard ol {
+    padding-left: 20px;
+}
+
+#leaderboard li {
+    margin: 8px 0;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Chart controls */
 .chart-controls {
     display: flex;
     flex-wrap: wrap;
@@ -306,6 +331,7 @@ body {
 .chart-controls label {
     font-size: 1rem;
     margin-right: 5px;
+    align-self: center;
 }
 
 .chart-controls select {
@@ -315,7 +341,7 @@ body {
     border-radius: 5px;
 }
 
-/* Goal progress section */
+/* Goal progress */
 .goal-progress {
     margin-bottom: 20px;
 }
@@ -324,6 +350,7 @@ body {
     display: flex;
     gap: 10px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 
 #goal-progress-form input,
@@ -332,6 +359,8 @@ body {
     font-size: 1rem;
     border: 1px solid #ddd;
     border-radius: 5px;
+    flex: 1;
+    min-width: 100px;
 }
 
 #goal-progress-form button {
@@ -362,31 +391,28 @@ body {
 
 .progress-fill {
     height: 100%;
-    background: #4caf50; /* Deku green */
-    width: 0; /* Dynamically updated */
-    transition: width 0.3s ease-in-out; /* Smooth animation */
+    background: #4caf50;
+    width: 0;
+    transition: width 0.3s ease-in-out;
 }
 
-.progress-fill.completed {
-    background: #4caf50; /* Green when goal achieved */
-}
-
-/* Streak section */
+/* Streak */
 .streak {
     margin-bottom: 20px;
 }
 
 #streak-text {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
-    color: #ff6f61; /* Coral for emphasis */
+    color: #ff6f61;
 }
 
-/* Progress actions (reset/export buttons) */
+/* Progress actions */
 .progress-actions {
     display: flex;
     gap: 10px;
     margin-top: 20px;
+    flex-wrap: wrap;
 }
 
 #reset-progress, #export-progress {
@@ -398,6 +424,8 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+    flex: 1;
+    min-width: 120px;
 }
 
 #reset-progress:hover, #export-progress:hover {
@@ -405,25 +433,23 @@ body {
     transform: scale(1.05);
 }
 
-/* Progress section text: Bold for visibility */
 .progress p {
     font-size: 1.1rem;
     font-weight: bold;
     color: #333;
 }
 
-/* Affiliate link: Coral color */
+/* Affiliate */
 .affiliate a {
     color: #ff6f61;
     text-decoration: none;
 }
 
-/* Affiliate link hover */
 .affiliate a:hover {
     text-decoration: underline;
 }
 
-/* Footer: Dark background with white text */
+/* Footer */
 footer {
     text-align: center;
     padding: 20px;
@@ -431,17 +457,18 @@ footer {
     color: white;
 }
 
-/* Beta button in hero section */
+/* Beta button */
 .beta-button {
     padding: 10px 20px;
     font-size: 1rem;
-    background: #ff6f61; /* Coral */
+    background: #ff6f61;
     border: none;
     color: white;
     cursor: pointer;
     border-radius: 5px;
     text-decoration: none;
     margin-top: 10px;
+    display: inline-block;
     transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
 }
 
@@ -450,7 +477,6 @@ footer {
     transform: scale(1.05);
 }
 
-/* Beta link in footer */
 .beta-link {
     color: #ff6f61;
     text-decoration: none;
@@ -460,107 +486,17 @@ footer {
     text-decoration: underline;
 }
 
-/* Back button in beta page header */
-.back-button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    background: #4caf50; /* Deku green */
-    border: none;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    text-decoration: none;
-    margin-top: 10px;
-    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.back-button:hover {
-    background: #45a049;
-    transform: scale(1.05);
-}
-
-/* Beta page section: Card-like container */
-.beta-page {
-    padding: 40px;
-    max-width: 800px;
-    margin: 20px auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Beta page heading and paragraph */
-.beta-page h2 {
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.beta-page p {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-/* HubSpot form styling */
-#hubspotForm {
-    margin-top: 10px;
-}
-
-.hs-form-frame input[type="text"],
-.hs-form-frame input[type="email"],
-.hs-form-frame select {
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-.hs-form-frame button[type="submit"] {
-    background: #ff6f61; /* Coral */
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
-}
-
-.hs-form-frame button[type="submit"]:hover {
-    background: #e55a50;
-    transform: scale(1.05);
-}
-
-/* Responsive: Adjustments for mobile screens */
+/* Responsive */
 @media (max-width: 600px) {
-    .hero h1 {
-        font-size: 2rem; /* Smaller headline */
-    }
-    .tracker, .progress, .quote, .affiliate, .beta-page {
-        padding: 20px; /* Reduced padding */
-    }
-    .edit-button, .delete-button {
-        padding: 5px 8px; /* Smaller buttons */
-        font-size: 0.8rem;
-    }
-    .chart-controls {
-        flex-direction: column;
-    }
-    #goal-progress-form {
-        flex-direction: column;
-    }
-    .progress-actions {
-        flex-direction: column;
-    }
-    /* Responsive input-group */
-    .input-group {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .input-group input,
-    .input-group select {
-        width: 100%;
-    }
+    .hero h1 { font-size: 2rem; }
+    .tracker, .progress, .quote, .affiliate { padding: 20px; }
+    .chart-controls, #goal-progress-form, .progress-actions { flex-direction: column; }
+    .input-group { flex-direction: column; align-items: stretch; }
+    .input-group input, .input-group select { width: 100%; }
 }

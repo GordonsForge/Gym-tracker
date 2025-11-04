@@ -58,6 +58,7 @@
     <!-- Tracker section: Goal form, workout form, and workout list -->
     <section id="tracker" class="tracker">
         <h2>Log Your Workout</h2>
+        
         <!-- Goal form: Set fitness goal, level, body part, height, weight -->
         <form id="goal-form">
             <label for="goal">Fitness Goal:</label>
@@ -84,6 +85,7 @@
                 <option value="arms">Arms</option>
                 <option value="shoulders">Shoulders</option>
                 <option value="glutes">Glutes</option>
+                <option value="cardio">Cardio</option>
             </select>
             <label for="height">Height:</label>
             <div class="input-group">
@@ -115,10 +117,11 @@
 
             <button type="submit">Save Goal</button>
         </form>
+
         <!-- Suggest Workout button: Triggers AI workout suggestion -->
         <button id="suggest-workout">Suggest Workout</button>
         <!-- Output for AI workout suggestions -->
-        <div id="suggestion-output"></div>
+        <div id="suggestion-output" style="margin: 15px 0; padding: 12px; background: #f0f8f0; border-left: 5px solid #27ae60; border-radius: 6px; font-weight: bold; color: #27ae60;"></div>
 
         <!-- Workout form: Log exercise details -->
         <form id="workout-form">
@@ -142,6 +145,7 @@
             </div>
             <button type="submit">Add Workout</button>
         </form>
+
         <!-- Button to clear workout list (preserves progress) -->
         <button id="clear-workouts">Clear Workouts</button>
         <!-- Container for workout list with checkboxes and edit/delete buttons -->
@@ -151,6 +155,10 @@
     <!-- Progress section: Displays completed workout counts, chart, streak, and goals -->
     <section id="progress" class="progress">
         <h2>Your Progress</h2>
+
+        <!-- INSIGHT BOX (ADDED) -->
+        <div id="insight-box" style="margin: 15px 0; padding: 12px; background: #fff9e6; border-left: 5px solid #f39c12; border-radius: 6px; font-weight: bold; color: #d35400; display: none;"></div>
+
         <div class="chart-controls">
             <label for="chart-type">Chart Type:</label>
             <select id="chart-type">
@@ -176,6 +184,7 @@
                 <option value="cardio">Cardio</option>
             </select>
         </div>
+
         <div class="goal-progress">
             <form id="goal-progress-form">
                 <label for="workout-goal">Workout Goal:</label>
@@ -191,9 +200,17 @@
                 <div id="goal-progress-fill" class="progress-fill"></div>
             </div>
         </div>
+
         <div class="streak">
             <p id="streak-text">Streak: 0 days</p>
         </div>
+
+        <!-- LEADERBOARD (ADDED) -->
+        <div id="leaderboard" class="leaderboard" style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 8px; display: none;">
+            <h3>Global Leaderboard</h3>
+            <ol></ol>
+        </div>
+
         <canvas id="progressChart"></canvas>
         <p id="progress-text">Today: 0 | Week: 0 | Month: 0</p>
         <div class="progress-actions">
