@@ -73,6 +73,7 @@ function showApp() {
 }
 
 async function saveGoalToDB() {
+  if (!token) return;
   const goal = document.getElementById('goal').value;
   const level = document.getElementById('fitness-level').value;
   const bodyPart = document.getElementById('body-part').value;
@@ -83,7 +84,7 @@ async function saveGoalToDB() {
   const bmi = parseFloat(bmiInput.value) || 0;
   const noEquipment = document.getElementById('no-equipment').checked;
 
-  userGoal = { goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi, noEquipment };
+  const goalData = { goal, level, bodyPart, height, heightUnit, weight, weightUnit, bmi, noEquipment };
 
   await fetch('https://fitness-tracker-backend-omega.vercel.app/api/goal', {
     method: 'POST',
@@ -91,8 +92,10 @@ async function saveGoalToDB() {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
     },
-    body: JSON.stringify(userGoal)
+    body: JSON.stringify(goalData)
   });
+
+  userGoal = goalData; // ← UPDATE AFTER SAVE
 }
 
 async function loadGoalFromDB() {
@@ -112,20 +115,16 @@ async function loadGoalFromDB() {
     document.getElementById('weight-unit').value = data.weightUnit || 'kg';
     document.getElementById('no-equipment').checked = data.noEquipment || false;
     calculateBMI();
-    updateUserGoalFromForm();
   }
 }
 
-// === NEW FUNCTION: Sync userGoal with form ===
 function updateUserGoalFromForm() {
-  userGoal = {
-    ...userGoal,
-    goal: document.getElementById('goal').value,
-    level: document.getElementById('fitness-level').value,
-    bodyPart: document.getElementById('body-part').value,
-    bmi: parseFloat(bmiInput.value) || 0,
-    noEquipment: document.getElementById('no-equipment').checked
-  };
+  if (!userGoal) userGoal = {};
+  userGoal.goal = document.getElementById('goal').value;
+  userGoal.level = document.getElementById('fitness-level').value;
+  userGoal.bodyPart = document.getElementById('body-part').value;
+  userGoal.bmi = parseFloat(bmiInput.value) || 0;
+  userGoal.noEquipment = document.getElementById('no-equipment').checked;
 }
 
 async function loadWorkoutsFromDB() {
@@ -166,7 +165,6 @@ async function checkForInsights() {
     }
   }
 }
-// === END NEW ===
 
 // Get DOM elements
 const form = document.getElementById('workout-form');
@@ -255,7 +253,7 @@ function saveWorkouts() {
   }
 }
 
-// calculateBMI — with color class + AUTO-SAVE BMI
+// calculateBMI — now syncs userGoal
 function calculateBMI() {
   const height = parseFloat(heightInput.value);
   const weight = parseFloat(weightInput.value);
@@ -293,12 +291,10 @@ function calculateBMI() {
   bmiCategory.textContent = `Category: ${category}`;
   bmiCategory.className = category.toLowerCase();
 
-  // AUTO-SYNC + SAVE BMI
   updateUserGoalFromForm();
-  if (token) saveGoalToDB();
 }
 
-// === ALL 854 LINES BELOW — 100% UNTOUCHED ===
+// === REST OF ORIGINAL CODE (UNCHANGED BELOW) ===
 const now = new Date();
 const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
@@ -569,7 +565,7 @@ function renderWorkouts() {
       document.getElementById('exercise').value = exercise;
       document.getElementById('sets').value = sets;
       document.getElementById('reps').value = reps;
-      document.getElementById('weight').value = weight;
+      document.getElementById('workout-weight').value = weight;
       document.getElementById('distance').value = distance;
       document.getElementById('time').value = time;
       document.getElementById('time-unit').value = timeUnit;
@@ -607,7 +603,7 @@ function renderWorkouts() {
   updateGoalProgress();
 }
 
-// === FIXED: Auto-sync userGoal on dropdown change ===
+// Auto-sync dropdowns
 ['goal', 'fitness-level', 'body-part', 'no-equipment'].forEach(id => {
   const el = document.getElementById(id);
   if (el) {
@@ -618,7 +614,7 @@ function renderWorkouts() {
   }
 });
 
-// === FIXED: Save Goal – NO RELOAD + SYNC BMI ===
+// Save Goal – NO RELOAD
 goalForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -653,7 +649,7 @@ goalForm.addEventListener('submit', async (e) => {
   }
 });
 
-// === FIXED: Suggest Workout – USE LATEST DATA ===
+// Suggest Workout – latest data
 suggestButton.addEventListener('click', async () => {
   const goal = userGoal?.goal || document.getElementById('goal').value;
   const level = userGoal?.level || document.getElementById('fitness-level').value;
@@ -701,7 +697,7 @@ form.addEventListener('submit', (e) => {
   const exercise = document.getElementById('exercise').value;
   const sets = document.getElementById('sets').value;
   const reps = document.getElementById('reps').value;
-  const weight = document.getElementById('weight').value;
+  const weight = document.getElementById('workout-weight').value;
   const distance = document.getElementById('distance').value;
   const time = document.getElementById('time').value;
   const timeUnit = document.getElementById('time-unit').value;
@@ -851,13 +847,6 @@ if (workoutGoal.value) {
 streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
 
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
-document.getElementById('height').value = '';
-document.getElementById('height-unit').value = 'cm';
-document.getElementById('weight').value = '';
-document.getElementById('weight-unit').value = 'kg';
-bmiInput.value = '';
-bmiCategory.textContent = '';
 
 if (token) {
   showApp();
