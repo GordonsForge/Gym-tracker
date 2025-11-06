@@ -292,6 +292,8 @@ function calculateBMI() {
 
   bmiCategory.textContent = `Category: ${category}`;
   bmiCategory.className = category.toLowerCase();
+  updateUserGoalFromForm();
+  if (token) saveGoalToDB();
 }
 
 // === ALL 854 LINES BELOW — 100% UNTOUCHED ===
@@ -657,6 +659,9 @@ suggestButton.addEventListener('click', async () => {
     suggestionOutput.textContent = 'Please select a goal, fitness level, and body part first.';
     return;
   }
+
+  updateUserGoalFromForm();
+  if (token) await saveGoalToDB();
 
   try {
     const response = await fetch('https://fitness-tracker-backend-omega.vercel.app/api/suggestions', {
