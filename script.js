@@ -112,7 +112,7 @@ async function loadGoalFromDB() {
     document.getElementById('weight-unit').value = data.weightUnit || 'kg';
     document.getElementById('no-equipment').checked = data.noEquipment || false;
     calculateBMI();
-    updateUserGoalFromForm(); // ← FIXED: Sync userGoal after load
+    updateUserGoalFromForm();
   }
 }
 
@@ -255,7 +255,7 @@ function saveWorkouts() {
   }
 }
 
-// calculateBMI — with color class
+// calculateBMI — with color class + AUTO-SAVE BMI
 function calculateBMI() {
   const height = parseFloat(heightInput.value);
   const weight = parseFloat(weightInput.value);
@@ -292,6 +292,8 @@ function calculateBMI() {
 
   bmiCategory.textContent = `Category: ${category}`;
   bmiCategory.className = category.toLowerCase();
+
+  // AUTO-SYNC + SAVE BMI
   updateUserGoalFromForm();
   if (token) saveGoalToDB();
 }
@@ -610,14 +612,17 @@ function renderWorkouts() {
   const el = document.getElementById(id);
   if (el) {
     el.addEventListener('change', () => {
-      updateUserGoalFromForm();  // ← UPDATE userGoal
-      if (token) saveGoalToDB(); // ← Save to DB
+      updateUserGoalFromForm();
+      if (token) saveGoalToDB();
     });
   }
 });
 
+// === FIXED: Save Goal – NO RELOAD + SYNC BMI ===
 goalForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  e.stopPropagation();
+
   const goal = document.getElementById('goal').value;
   const level = document.getElementById('fitness-level').value;
   const bodyPart = document.getElementById('body-part').value;
@@ -648,6 +653,7 @@ goalForm.addEventListener('submit', async (e) => {
   }
 });
 
+// === FIXED: Suggest Workout – USE LATEST DATA ===
 suggestButton.addEventListener('click', async () => {
   const goal = userGoal?.goal || document.getElementById('goal').value;
   const level = userGoal?.level || document.getElementById('fitness-level').value;
@@ -675,14 +681,14 @@ suggestButton.addEventListener('click', async () => {
 
     const data = await response.json();
 
-    if (response.ok) {
+    if (response.ok && data.suggestions?.length) {
       suggestionOutput.textContent = data.suggestions.join(', ');
     } else {
-      suggestionOutput.textContent = `Error: ${data.message || 'Try again'}`;
+      suggestionOutput.textContent = data.note ? `AI offline: ${data.suggestions.join(', ')}` : 'No suggestions returned.';
     }
   } catch (err) {
     console.error('API Error:', err);
-    suggestionOutput.textContent = 'Failed to connect to backend. Please try again later.';
+    suggestionOutput.textContent = 'Failed to connect. Check internet or backend.';
   }
 
   if (typeof gtag !== 'undefined') {
@@ -845,11 +851,6 @@ if (workoutGoal.value) {
 streakText.textContent = `Streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`;
 
 document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
-// === DELETED: These 3 lines were resetting dropdowns ===
-// document.getElementById('goal').value = '';
-// document.getElementById('fitness-level').value = '';
-// document.getElementById('body-part').value = '';
 
 document.getElementById('height').value = '';
 document.getElementById('height-unit').value = 'cm';
