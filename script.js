@@ -314,7 +314,8 @@ suggestButton.addEventListener('click', async () => {
     const data = await res.json();
 
     if (data.suggestions?.length) {
-      suggestionOutput.textContent = textdata.suggestions.join(" | ");
+      const text = data.note ? data.suggestions.join(" | ") : data.suggestions.join(" | ");
+      suggestionOutput.textContent = text;
       suggestionOutput.style.color = data.note ? "#e67e22" : "#27ae60";
     } else {
       suggestionOutput.textContent = "No suggestions found.";
